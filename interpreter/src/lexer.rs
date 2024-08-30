@@ -51,7 +51,7 @@ enum TokenType {
 }
 
 // Token's meta data
-struct Token<'sourcecode> {
+pub struct Token<'sourcecode> {
     pub kind: TokenType, // The type of language token
     line: usize,         // Line number of token in source file
     pub lexeme: &'sourcecode str,

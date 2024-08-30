@@ -5,6 +5,8 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 
+use lexer::Scanner;
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -12,7 +14,7 @@ fn main() {
         repl();
     } else if args.len() == 2 {
         match run_file(&args[1]) {
-            Ok(()) => println!("Succes"),
+            Ok(()) => println!("Success"),
             Err(e) => println!("Error: {e:?}"),
         }
     } else {
@@ -39,7 +41,8 @@ fn repl() -> () {
             str.pop();
         }
 
-        println!("You typed: {}", str);
+        println!("typed: {}", str); //TODO change to new line
+        str.clear();
     }
 }
 
