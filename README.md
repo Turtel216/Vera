@@ -9,13 +9,61 @@
 
 Vera is a dynamically typed interpreted procedural programming language. Each statement has to end with a semicolone ( ; ). Vera does not allow global variables or nested procedures
 
+### Comments
+
+Comments in Vera start with the double forward slash ( // ).
+
+```ruby 
+// this is a comment
+```
+
 ### Declarations
 
+Variables in Vera are declared using the **pink** keyword.
+
+```ruby 
+pink x = 5;
+```
+
+Procedures are declared using the **brick** keyword
+
+```ruby 
+brick add(a, b) {
+    eclipse a + b;
+}
+```
+
+The **eclipse** keyword in the above example functions just as a return keyword in other languages
+
+The procedure can later be called like this
+
+pink x = add(1, 2); // Assigns value of 3 to variable x
 
 ### Writting to the console
 
+To write to the console use the **shine** keyword
+
+```ruby 
+shine "Hey you";
+```
 
 ### Control flow
+
+while loops are declared using the **echoes keyword
+
+```ruby 
+echoes(1 == 1) {
+    shine "Hey you";
+}
+```
+
+for loops are declared using the **time** keyword
+
+```ruby 
+time(pink i = 0; i < 10; i++) {
+    shine i;
+}
+```
 
 ### Operators
 
