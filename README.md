@@ -11,76 +11,11 @@ Vera is a dynamically typed interpreted procedural programming language. Each st
 
 ### Declarations
 
-The **yyz** keyword is used for declaring variables.
-
-```ruby
-yyz name = "Xanadu";
-```
-
-Procedures are declared using the **subdivision** keyword 
-
-```ruby
-subdivision add(a, b) {
-   limelight a + b
-}
-```
-
-The **limelight** keyword in the above example functions just as a **return** keyword in other languages
 
 ### Writting to the console
 
-To write to the console use the **blabla** keyword 
-
-```ruby
-blabla "Piece";
-```
 
 ### Control flow
-
-**while** loops are declared using the **workingmans_grind** keyword 
-
-```ruby
-workingmans_grind(true) {
-   blabla "Rush rocks!";
-}
-```
-
-**for** loops are declared using the **circumstances** keyword 
-
-```ruby
-circumstances(yyz i = 0; i < 10; i = i + 1) {
-    blabla i;
-}
-```
-
-**if** statements are declared using the **freewill** keyword
-
-```ruby
-freewill(1 == 1) {
-    blabla "I will choose free will";
-}
-```
-
-**else** statements are declaed using the **counterpoint** keyword 
-
-```ruby
-freewill(1 == 2) {
-   blabla "I will choose free will";
-} counterpoint {
-   blabla "You still made a choice";
-}
-```
-
-### Classes
-
-Classes in Xanadu are declared using the **overtune** keyword
-
-```ruby
-overtune Band
-{
-
-}
-```
 
 ### Operators
 
