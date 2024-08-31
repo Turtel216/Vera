@@ -12,20 +12,13 @@ use crate::chunk::Chunk;
 use crate::chunk::OpCode;
 
 pub struct VM<'v> {
-    chunk: &'v Chunk,
-    ip: Vec<OpCode>,
+    pub chunk: &'v mut Chunk,
+    pub ip: Vec<OpCode>,
 }
 
 use crate::value::Value;
 
-impl VM<'v> {
-    // Initialize VM
-    pub fn new() -> VM<'v> {
-        VM {
-            chunk: Chunk::new(),
-            ip: Vec::new(),
-        }
-    }
+impl<'v> VM<'v> {
     // Close vm
     pub fn free_vm(&mut self) -> () {}
 
@@ -49,10 +42,10 @@ impl VM<'v> {
         }
     }
     // Interpret a chunk of bytecode
-    pub fn interpret(&mut self, chunk: &Chunk) -> InterpretResult {
+    pub fn interpret(&mut self, chunk: &'v mut Chunk) -> InterpretResult {
         self.chunk = chunk;
         self.ip.push(
-            chunk
+            self.chunk
                 .code
                 .pop()
                 .expect("Error getting byte code instruction"),

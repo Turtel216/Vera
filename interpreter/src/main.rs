@@ -12,13 +12,17 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 
+use chunk::Chunk;
 use vm::VM;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
 
     // Initialize vm
-    let mut _vm = VM::new();
+    let mut _vm = VM {
+        chunk: &mut Chunk::new(),
+        ip: Vec::new(),
+    };
 
     if args.len() == 1 {
         repl();
@@ -54,7 +58,7 @@ fn repl() -> () {
             str.pop();
         }
 
-        let _ = vm::interpret(&str);
+        //let _ = vm::interpret(&str);
         str.clear();
     }
 }
@@ -70,7 +74,7 @@ fn run_file(_path: &String) -> std::io::Result<()> {
     // Interpret each line
     let lines = contents.lines();
     for line in lines {
-        vm::interpret(&line.to_string());
+        //vm::interpret(&line.to_string());
     }
     Ok(())
 }

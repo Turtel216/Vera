@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Byte code instructions
+#[derive(Copy, Clone)]
 pub enum OpCode {
     OpReturn,
     OpConstant,
@@ -20,12 +21,12 @@ pub struct Chunk {
     pub line: Vec<usize>,      // Line of each chunk in Vera source code
 }
 
-impl Chunk {
+impl<'c> Chunk {
     // Create a new Chunk
     pub fn new() -> Chunk {
         Chunk {
             code: Vec::new(),
-            constants: ValueArray::new(),
+            constants: ValueArray { array: Vec::new() },
             line: Vec::new(),
         }
     }
