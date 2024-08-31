@@ -1,11 +1,14 @@
+// Copyright 2024 Dimitrios Papakonstantinou. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file.
+
 mod lexer;
+mod vm;
 
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
-
-use lexer::Scanner;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -41,17 +44,23 @@ fn repl() -> () {
             str.pop();
         }
 
-        println!("typed: {}", str); //TODO change to new line
+        let _ = vm::interpret(&str);
         str.clear();
     }
 }
 
 // File interpreter
 fn run_file(_path: &String) -> std::io::Result<()> {
+    // Read from file
     let file = File::open(_path)?;
     let mut buf_reader = BufReader::new(file);
     let mut contents = String::new();
     buf_reader.read_to_string(&mut contents)?;
-    println!("{contents}");
+
+    // Interpret each line
+    let lines = contents.lines();
+    for line in lines {
+        vm::interpret(&line.to_string());
+    }
     Ok(())
 }
