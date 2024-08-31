@@ -12,8 +12,13 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 
+use vm::VM;
+
 fn main() {
     let args: Vec<String> = env::args().collect();
+
+    // Initialize vm
+    let mut _vm = VM::new();
 
     if args.len() == 1 {
         repl();
@@ -25,6 +30,9 @@ fn main() {
     } else {
         println!("Usage: pf [path]");
     }
+
+    // Close VM
+    _vm.free_vm();
 }
 
 // Command line interpreter

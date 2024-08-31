@@ -1,3 +1,7 @@
+// Copyright 2024 Dimitrios Papakonstantinou. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file.
+
 // Byte code instructions
 pub enum OpCode {
     OpReturn,
@@ -11,14 +15,22 @@ use crate::value::ValueArray;
 
 // Chunk of byte code
 pub struct Chunk {
-    code: Vec<u8>,         // Dynamic array if bytes
-    constants: ValueArray, // Array of Vera values
-    line: Vec<usize>,      // Line of each chunk in Vera source code
+    pub code: Vec<OpCode>,     // Dynamic array if bytes
+    pub constants: ValueArray, // Array of Vera values
+    pub line: Vec<usize>,      // Line of each chunk in Vera source code
 }
 
 impl Chunk {
+    // Create a new Chunk
+    pub fn new() -> Chunk {
+        Chunk {
+            code: Vec::new(),
+            constants: ValueArray::new(),
+            line: Vec::new(),
+        }
+    }
     // Append a byte to the chunk
-    pub fn write_chunk(&mut self, byte: u8, line: usize) -> () {
+    pub fn write_chunk(&mut self, byte: OpCode, line: usize) -> () {
         self.code.push(byte);
         self.line.push(line);
     }

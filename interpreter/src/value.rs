@@ -1,3 +1,7 @@
+// Copyright 2024 Dimitrios Papakonstantinou. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file
+
 pub struct Value {
     value: f64,
 }
@@ -13,6 +17,9 @@ pub struct ValueArray {
 }
 
 impl ValueArray {
+    pub fn new() -> ValueArray {
+        ValueArray { array: Vec::new() }
+    }
     pub fn write_value_array(&mut self, value: Value) -> () {
         self.array.push(value);
     }
