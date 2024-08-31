@@ -14,6 +14,7 @@ use crate::chunk::OpCode;
 pub struct VM<'v> {
     pub chunk: &'v mut Chunk,
     pub ip: Vec<OpCode>,
+    pub stack: Vec<Value>,
 }
 
 use crate::value::Value;
@@ -26,16 +27,19 @@ impl<'v> VM<'v> {
     fn run(&mut self) -> InterpretResult {
         loop {
             match self.ip.pop() {
-                Some(OpCode::OpReturn) => return InterpretResult::InterpretOk,
+                Some(OpCode::OpReturn) => {
+                    Value::print_value(self.pop());
+                    return InterpretResult::InterpretOk;
+                }
                 Some(OpCode::OpConstant) => {
-                    Value::print_value(
-                        self.chunk
-                            .constants
-                            .array
-                            .pop()
-                            .expect("Couldn't retrieve value from constants array"),
-                    );
-                    println!("")
+                    let constant = self
+                        .chunk
+                        .constants
+                        .array
+                        .pop()
+                        .expect("Couldn't retrieve value from constants array");
+
+                    self.push(constant)
                 }
                 None => return InterpretResult::InterpretRuneTimeError,
             }
@@ -51,5 +55,18 @@ impl<'v> VM<'v> {
                 .expect("Error getting byte code instruction"),
         );
         self.run()
+    }
+
+    // Clear stack
+    fn reset_stack(&mut self) -> () {
+        self.stack.clear();
+    }
+
+    // Push onto stack
+    pub fn push(&mut self, value: Value) -> () {
+        self.stack.push(value);
+    }
+    pub fn pop(&mut self) -> Value {
+        self.stack.pop().expect("Couldn't Pop from VM stack")
     }
 }

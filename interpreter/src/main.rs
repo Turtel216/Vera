@@ -22,6 +22,7 @@ fn main() {
     let mut _vm = VM {
         chunk: &mut Chunk::new(),
         ip: Vec::new(),
+        stack: Vec::new(),
     };
 
     if args.len() == 1 {
