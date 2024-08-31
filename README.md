@@ -13,7 +13,7 @@ Vera is a dynamically typed interpreted procedural programming language. Each st
 
 Comments in Vera start with the double forward slash ( // ).
 
-```ruby 
+```c
 // this is a comment
 ```
 
