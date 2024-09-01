@@ -103,9 +103,92 @@ impl<'s> Scanner<'s> {
         match current_char {
             '\n' => self.line += 1,
             ' ' | '\r' | '\t' => (),
+            '(' => self
+                .tokens
+                .push(Token::new(TokenType::TokenLeftParen, self)),
+            ')' => self
+                .tokens
+                .push(Token::new(TokenType::TokenRightParen, self)),
+            '{' => self
+                .tokens
+                .push(Token::new(TokenType::TokenLeftBrace, self)),
+            '}' => self
+                .tokens
+                .push(Token::new(TokenType::TokenRightBrace, self)),
+            ';' => self
+                .tokens
+                .push(Token::new(TokenType::TokenSemicolon, self)),
+            '.' => self.tokens.push(Token::new(TokenType::TokenDot, self)),
+            '-' => self.tokens.push(Token::new(TokenType::TokenMinus, self)),
+            '+' => self.tokens.push(Token::new(TokenType::TokenPlus, self)),
+            '/' => self.tokens.push(Token::new(TokenType::TokenSlash, self)),
+            '*' => self.tokens.push(Token::new(TokenType::TokenStar, self)),
+            '=' => {
+                let res = if self.match_next('=') {
+                    TokenType::TokenEqualEqual
+                } else {
+                    TokenType::TokenEqual
+                };
+
+                self.tokens.push(Token::new(res, self));
+            }
+            '!' => {
+                let res = if self.match_next('=') {
+                    TokenType::TokenBangEqual
+                } else {
+                    TokenType::TokenBang
+                };
+
+                self.tokens.push(Token::new(res, self));
+            }
+            '<' => {
+                let res = if self.match_next('=') {
+                    TokenType::TokenLessEqual
+                } else {
+                    TokenType::TokenLess
+                };
+
+                self.tokens.push(Token::new(res, self));
+            }
+            '>' => {
+                let res = if self.match_next('=') {
+                    TokenType::TokenGreaterEqual
+                } else {
+                    TokenType::TokenGreater
+                };
+
+                self.tokens.push(Token::new(res, self));
+            }
+            _ => !todo!(),
         }
 
         Token::error_token("Unexpected character.".to_string(), self);
+    }
+
+    fn peek(&self) -> char {
+        return self.source.chars().nth(self.current).unwrap_or_else(|| {
+            panic!(
+                "Error in peek(). No character at index {}. Last character was {}",
+                self.current,
+                self.source.chars().nth(self.current - 1).unwrap()
+            )
+        });
+    }
+
+    fn match_next(&mut self, expected: char) -> bool {
+        if self.is_at_end() {
+            return false;
+        }
+
+        let next_char = self.source.chars().nth(self.current).unwrap_or_else(|| {
+            panic!(
+                "No character at index {}. Last character was {}",
+                self.current,
+                self.source.chars().nth(self.current - 1).unwrap()
+            )
+        });
+
+        return next_char != expected;
     }
 
     fn is_at_end(&self) -> bool {
@@ -132,7 +215,7 @@ impl Token {
     pub fn new(_type: TokenType, scanner: &Scanner) -> Token {
         Token {
             _type,
-            start: scanner.start.to_string(), //TODO
+            start: scanner.start.to_string(),
             line: scanner.line,
         }
     }
