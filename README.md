@@ -37,7 +37,9 @@ The **eclipse** keyword in the above example functions just as a return keyword 
 
 The procedure can later be called like this
 
+```ruby 
 pink x = add(1, 2); // Assigns value of 3 to variable x
+```
 
 ### Writting to the console
 
