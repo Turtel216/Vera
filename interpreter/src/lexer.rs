@@ -4,7 +4,7 @@
 
 // Types of language tokens
 
-use std::str::{CharIndices, Chars};
+use std::str::Chars;
 
 // Types of language tokens
 #[derive(Eq, PartialEq, Debug, Copy, Clone, Hash)]
@@ -58,28 +58,73 @@ pub enum TokenType {
 struct Token {
     _type: TokenType,
     start: String,
-    length: u64,
-    line: u64,
+    line: usize,
 }
 
+// Scanner is used to tokenize the source string
 pub struct Scanner<'s> {
-    start: &'s Chars<'s>,
-    current: &'s Chars<'s>,
-    line: u64,
+    source: &'s str,
+    tokens: Vec<Token>,
+    start: usize,
+    current: usize,
+    line: usize,
 }
 
 impl<'s> Scanner<'s> {
-    pub fn new(source_iter: &'s Chars) -> Scanner<'s> {
+    pub fn new(source: &'s str) -> Scanner<'s> {
         Scanner {
-            start: source_iter,
-            current: source_iter,
+            source,
+            start: 0,
+            current: 0,
             line: 1,
+            tokens: Vec::new(),
         }
     }
-    pub fn scan_token(&'s mut self) -> Token {
-        self.start = self.current;
 
-        Token::error_token("Unexpected character.".to_string(), self)
+    pub fn scan_tokens(&mut self) -> &Vec<Token> {
+        while !self.is_at_end() {
+            self.start = self.current;
+
+            self.scan_token();
+        }
+
+        self.tokens.push(Token {
+            _type: TokenType::TokenEOF,
+            start: "".to_string(),
+            line: self.line,
+        });
+
+        return &self.tokens;
+    }
+
+    fn scan_token(&mut self) -> () {
+        let current_char = self.advance();
+
+        match current_char {
+            '\n' => self.line += 1,
+            ' ' | '\r' | '\t' => (),
+        }
+
+        Token::error_token("Unexpected character.".to_string(), self);
+    }
+
+    fn is_at_end(&self) -> bool {
+        return self.current > self.source.len();
+    }
+
+    fn advance(&mut self) -> char {
+        let char = self.source.chars().nth(self.current).unwrap_or_else(|| {
+            println!(
+                "No characters at index {} were found. Last character was {}.",
+                self.current,
+                self.source.chars().nth(self.current - 1).unwrap()
+            );
+            std::process::exit(1);
+        });
+
+        self.current += 1;
+
+        return char;
     }
 }
 
@@ -87,8 +132,7 @@ impl Token {
     pub fn new(_type: TokenType, scanner: &Scanner) -> Token {
         Token {
             _type,
-            start: scanner.start.as_str().to_string(), //TODO
-            length: 5,                                 //TODO
+            start: scanner.start.to_string(), //TODO
             line: scanner.line,
         }
     }
@@ -96,7 +140,6 @@ impl Token {
         Token {
             _type: TokenType::TokenError,
             start: msg,
-            length: 5, //TODO
             line: scanner.line,
         }
     }
