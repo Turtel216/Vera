@@ -7,6 +7,11 @@
 pub enum OpCode {
     OpReturn,
     OpConstant,
+    OpNegate,
+    OpAdd,
+    OpSubtract,
+    OpMultiply,
+    OpDivide,
 }
 
 use std::usize;

@@ -4,7 +4,7 @@
 
 // #[derive(Copy, Clone)]
 pub struct Value {
-    value: f64,
+    pub value: f64,
 }
 
 impl Value {

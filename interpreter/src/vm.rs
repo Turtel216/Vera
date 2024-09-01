@@ -41,6 +41,35 @@ impl<'v> VM<'v> {
 
                     self.push(constant)
                 }
+                Some(OpCode::OpNegate) => {
+                    let mut value = self.pop();
+                    value.value = value.value - 1.0;
+                    self.push(value);
+                }
+                Some(OpCode::OpAdd) => {
+                    let value_a = self.pop();
+                    let value_b = self.pop();
+                    let add = value_a.value + value_b.value;
+                    self.push(Value { value: add });
+                }
+                Some(OpCode::OpSubtract) => {
+                    let value_a = self.pop();
+                    let value_b = self.pop();
+                    let sub = value_a.value - value_b.value;
+                    self.push(Value { value: sub });
+                }
+                Some(OpCode::OpMultiply) => {
+                    let value_a = self.pop();
+                    let value_b = self.pop();
+                    let mult = value_a.value * value_b.value;
+                    self.push(Value { value: mult });
+                }
+                Some(OpCode::OpDivide) => {
+                    let value_a = self.pop();
+                    let value_b = self.pop();
+                    let div = value_a.value / value_b.value;
+                    self.push(Value { value: div });
+                }
                 None => return InterpretResult::InterpretRuneTimeError,
             }
         }
