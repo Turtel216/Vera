@@ -167,10 +167,30 @@ impl<'s> Scanner<'s> {
                     self.tokens.push(Token::new(TokenType::TokenSlash, self));
                 }
             }
+            '"' => {
+                let res = self.lex_string();
+                self.tokens.push(res);
+            }
             _ => !todo!(),
         }
 
         Token::error_token("Unexpected character.".to_string(), self);
+    }
+
+    fn lex_string(&mut self) -> Token {
+        while self.peek() != '"' && !self.is_at_end() {
+            if self.peek() == '\n' {
+                self.line += 1;
+            }
+            self.advance();
+        }
+
+        if self.is_at_end() {
+            return Token::error_token("Unterminated string".to_string(), self);
+        }
+
+        self.advance();
+        return Token::new(TokenType::TokenString, self);
     }
 
     fn peek(&self) -> char {
