@@ -4,9 +4,11 @@
 
 // Types of language tokens
 
+use std::str::{CharIndices, Chars};
+
 // Types of language tokens
 #[derive(Eq, PartialEq, Debug, Copy, Clone, Hash)]
-enum TokenType {
+pub enum TokenType {
     // Single-character tokens.
     TokenRightParen,
     TokenLeftParen,
@@ -51,4 +53,51 @@ enum TokenType {
 
     TokenError,
     TokenEOF,
+}
+
+struct Token {
+    _type: TokenType,
+    start: String,
+    length: u64,
+    line: u64,
+}
+
+pub struct Scanner<'s> {
+    start: Chars<'s>,
+    current: Chars<'s>,
+    line: u64,
+}
+
+impl<'s> Scanner<'s> {
+    pub fn new(_source: &'s String) -> Scanner {
+        Scanner {
+            start: _source.chars(),
+            current: _source.chars(),
+            line: 1,
+        }
+    }
+    pub fn scan_token(&'s mut self) -> Token {
+        self.start = self.current.clone();
+
+        Token::error_token("Unexpected character.".to_string(), self)
+    }
+}
+
+impl Token {
+    pub fn new(_type: TokenType, scanner: &Scanner) -> Token {
+        Token {
+            _type,
+            start: scanner.start.as_str().to_string(), //TODO
+            length: 5,                                 //TODO
+            line: scanner.line,
+        }
+    }
+    pub fn error_token(msg: String, scanner: &Scanner) -> Token {
+        Token {
+            _type: TokenType::TokenError,
+            start: msg,
+            length: 5, //TODO
+            line: scanner.line,
+        }
+    }
 }

@@ -10,6 +10,7 @@ pub enum InterpretResult {
 
 use crate::chunk::Chunk;
 use crate::chunk::OpCode;
+use crate::compiler::compile;
 
 pub struct VM<'v> {
     pub chunk: &'v mut Chunk,
@@ -75,7 +76,10 @@ impl<'v> VM<'v> {
         }
     }
     // Interpret a chunk of bytecode
-    pub fn interpret(&mut self, chunk: &'v mut Chunk) -> InterpretResult {
+    pub fn interpret(&mut self, _source: &String) -> InterpretResult {
+        compile(_source);
+        InterpretResult::InterpretOk
+        /*
         self.chunk = chunk;
 
         // Add all op codes to vm instraction codes
@@ -91,6 +95,7 @@ impl<'v> VM<'v> {
         }
 
         self.run()
+        */
     }
 
     // Clear stack

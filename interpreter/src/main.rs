@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 mod chunk;
+mod compiler;
 mod lexer;
 mod value;
 mod vm;
@@ -18,25 +19,6 @@ use vm::VM;
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    // Initialize vm
-    let mut _vm = VM {
-        chunk: &mut Chunk::new(),
-        ip: Vec::new(),
-        stack: Vec::new(),
-    };
-
-    let mut chunk = Chunk::new();
-    chunk.write_chunk(chunk::OpCode::OpConstant, 123);
-    chunk.add_constant(value::Value { value: 3.4 });
-
-    chunk.write_chunk(chunk::OpCode::OpConstant, 123);
-    chunk.add_constant(value::Value { value: 1.0 });
-
-    chunk.write_chunk(chunk::OpCode::OpAdd, 123);
-    chunk.write_chunk(chunk::OpCode::OpReturn, 123);
-
-    _vm.interpret(&mut chunk);
-
     if args.len() == 1 {
         repl();
     } else if args.len() == 2 {
@@ -47,15 +29,19 @@ fn main() {
     } else {
         println!("Usage: pf [path]");
     }
-
-    // Close VM
-    _vm.free_vm();
 }
 
 // Command line interpreter
 fn repl() -> () {
     use std::io::{stdin, stdout, Write};
     let mut str = String::new();
+
+    // Initialize vm
+    let mut _vm = VM {
+        chunk: &mut Chunk::new(),
+        ip: Vec::new(),
+        stack: Vec::new(),
+    };
 
     loop {
         print!("> ");
@@ -71,7 +57,7 @@ fn repl() -> () {
             str.pop();
         }
 
-        //let _ = vm::interpret(&str);
+        _vm.interpret(&str);
         str.clear();
     }
 }
@@ -84,10 +70,19 @@ fn run_file(_path: &String) -> std::io::Result<()> {
     let mut contents = String::new();
     buf_reader.read_to_string(&mut contents)?;
 
+    // Initialize vm
+    let mut _vm = VM {
+        chunk: &mut Chunk::new(),
+        ip: Vec::new(),
+        stack: Vec::new(),
+    };
+
     // Interpret each line
     let lines = contents.lines();
     for line in lines {
-        //vm::interpret(&line.to_string());
+        _vm.interpret(&line.to_string());
     }
+
+    _vm.free_vm();
     Ok(())
 }
