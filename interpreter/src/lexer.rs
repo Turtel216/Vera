@@ -121,7 +121,6 @@ impl<'s> Scanner<'s> {
             '.' => self.tokens.push(Token::new(TokenType::TokenDot, self)),
             '-' => self.tokens.push(Token::new(TokenType::TokenMinus, self)),
             '+' => self.tokens.push(Token::new(TokenType::TokenPlus, self)),
-            '/' => self.tokens.push(Token::new(TokenType::TokenSlash, self)),
             '*' => self.tokens.push(Token::new(TokenType::TokenStar, self)),
             '=' => {
                 let res = if self.match_next('=') {
@@ -159,6 +158,15 @@ impl<'s> Scanner<'s> {
 
                 self.tokens.push(Token::new(res, self));
             }
+            '/' => {
+                if self.peek_next() == '/' {
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        self.advance();
+                    }
+                } else {
+                    self.tokens.push(Token::new(TokenType::TokenSlash, self));
+                }
+            }
             _ => !todo!(),
         }
 
@@ -173,6 +181,20 @@ impl<'s> Scanner<'s> {
                 self.source.chars().nth(self.current - 1).unwrap()
             )
         });
+    }
+
+    fn peek_next(&self) -> char {
+        return self
+            .source
+            .chars()
+            .nth(self.current + 1)
+            .unwrap_or_else(|| {
+                panic!(
+                    "Error in peek_next(). No character at index {}. Last character was {}",
+                    self.current,
+                    self.source.chars().nth(self.current - 1).unwrap()
+                )
+            });
     }
 
     fn match_next(&mut self, expected: char) -> bool {
