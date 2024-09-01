@@ -63,21 +63,21 @@ struct Token {
 }
 
 pub struct Scanner<'s> {
-    start: Chars<'s>,
-    current: Chars<'s>,
+    start: &'s Chars<'s>,
+    current: &'s Chars<'s>,
     line: u64,
 }
 
 impl<'s> Scanner<'s> {
-    pub fn new(_source: &'s String) -> Scanner {
+    pub fn new(source_iter: &'s Chars) -> Scanner<'s> {
         Scanner {
-            start: _source.chars(),
-            current: _source.chars(),
+            start: source_iter,
+            current: source_iter,
             line: 1,
         }
     }
     pub fn scan_token(&'s mut self) -> Token {
-        self.start = self.current.clone();
+        self.start = self.current;
 
         Token::error_token("Unexpected character.".to_string(), self)
     }
