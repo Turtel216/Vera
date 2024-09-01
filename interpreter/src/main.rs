@@ -25,6 +25,18 @@ fn main() {
         stack: Vec::new(),
     };
 
+    let mut chunk = Chunk::new();
+    chunk.write_chunk(chunk::OpCode::OpConstant, 123);
+    chunk.add_constant(value::Value { value: 3.4 });
+
+    chunk.write_chunk(chunk::OpCode::OpConstant, 123);
+    chunk.add_constant(value::Value { value: 1.0 });
+
+    chunk.write_chunk(chunk::OpCode::OpAdd, 123);
+    chunk.write_chunk(chunk::OpCode::OpReturn, 123);
+
+    _vm.interpret(&mut chunk);
+
     if args.len() == 1 {
         repl();
     } else if args.len() == 2 {

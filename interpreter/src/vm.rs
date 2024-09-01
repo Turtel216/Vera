@@ -77,12 +77,19 @@ impl<'v> VM<'v> {
     // Interpret a chunk of bytecode
     pub fn interpret(&mut self, chunk: &'v mut Chunk) -> InterpretResult {
         self.chunk = chunk;
-        self.ip.push(
-            self.chunk
-                .code
-                .pop()
-                .expect("Error getting byte code instruction"),
-        );
+
+        // Add all op codes to vm instraction codes
+        let code_iter = self.chunk.code.iter();
+        for op_code in code_iter {
+            self.ip.push(*op_code);
+        }
+
+        // Add all constants to vm stack
+        let _value_iter = self.chunk.constants.array.iter();
+        for value_ in _value_iter {
+            self.stack.push(*value_);
+        }
+
         self.run()
     }
 
