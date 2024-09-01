@@ -79,13 +79,13 @@ impl<'v> VM<'v> {
         self.chunk = chunk;
 
         // Add all op codes to vm instraction codes
-        let code_iter = self.chunk.code.iter();
+        let code_iter = self.chunk.code.iter().rev();
         for op_code in code_iter {
             self.ip.push(*op_code);
         }
 
         // Add all constants to vm stack
-        let _value_iter = self.chunk.constants.array.iter();
+        let _value_iter = self.chunk.constants.array.iter().rev();
         for value_ in _value_iter {
             self.stack.push(*value_);
         }
