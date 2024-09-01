@@ -100,6 +100,10 @@ impl<'s> Scanner<'s> {
     fn scan_token(&mut self) -> () {
         let current_char = self.advance();
 
+        if (current_char.is_numeric()) {
+            self.lex_number(current_char);
+        }
+
         match current_char {
             '\n' => self.line += 1,
             ' ' | '\r' | '\t' => (),
@@ -175,6 +179,23 @@ impl<'s> Scanner<'s> {
         }
 
         Token::error_token("Unexpected character.".to_string(), self);
+    }
+
+    fn lex_number(&mut self, current_char: char) -> Token {
+        while current_char.is_numeric() {
+            self.advance();
+        }
+
+        // Look for fractional part
+        if self.peek() == '.' && self.peek_next().is_numeric() {
+            // Consume .
+            self.advance();
+
+            while self.peek().is_numeric() {
+                self.advance();
+            }
+        }
+        return Token::new(TokenType::TokenNumber, self);
     }
 
     fn lex_string(&mut self) -> Token {
