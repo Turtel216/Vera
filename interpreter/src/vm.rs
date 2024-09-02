@@ -12,21 +12,24 @@ use crate::chunk::Chunk;
 use crate::chunk::OpCode;
 use crate::compiler::compile;
 
+// Vera stack based Virtual Machine
 pub struct VM<'v> {
-    pub chunk: &'v mut Chunk,
-    pub ip: Vec<OpCode>,
-    pub stack: Vec<Value>,
+    pub chunk: &'v mut Chunk, // Byte code chunk
+    pub ip: Vec<OpCode>,      // VM instructions
+    pub stack: Vec<Value>,    // VM value stack
 }
 
 use crate::value::Value;
 
 impl<'v> VM<'v> {
     // Close vm
+    // TODO
     pub fn free_vm(&mut self) -> () {}
 
     // Run vm instuctions
     fn run(&mut self) -> InterpretResult {
         loop {
+            // Execute next instruction
             match self.ip.pop() {
                 Some(OpCode::OpReturn) => {
                     Value::print_value(self.pop());
@@ -77,8 +80,12 @@ impl<'v> VM<'v> {
     }
     // Interpret a chunk of bytecode
     pub fn interpret(&mut self, _source: &String) -> InterpretResult {
+        // Compile source file
         compile(_source);
-        InterpretResult::InterpretOk
+
+        // The interpreter run without any errors
+        return InterpretResult::InterpretOk;
+
         /*
         self.chunk = chunk;
 
@@ -103,10 +110,12 @@ impl<'v> VM<'v> {
         self.stack.clear();
     }
 
-    // Push onto stack
+    // push onto value stack
     pub fn push(&mut self, value: Value) -> () {
         self.stack.push(value);
     }
+
+    // pop from value stack
     pub fn pop(&mut self) -> Value {
         self.stack.pop().expect("Couldn't Pop from VM stack")
     }
