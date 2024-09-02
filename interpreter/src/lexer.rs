@@ -100,8 +100,12 @@ impl<'s> Scanner<'s> {
     fn scan_token(&mut self) -> () {
         let current_char = self.advance();
 
-        if (current_char.is_numeric()) {
+        if current_char.is_numeric() {
             self.lex_number(current_char);
+        }
+
+        if current_char.is_alphabetic() {
+            self.lex_identifier();
         }
 
         match current_char {
@@ -179,6 +183,45 @@ impl<'s> Scanner<'s> {
         }
 
         Token::error_token("Unexpected character.".to_string(), self);
+    }
+
+    fn lex_identifier(&mut self) -> () {
+        while self.peek().is_alphabetic() || self.peek().is_numeric() {
+            self.advance();
+        }
+
+        self.tokens.push(self.identifier_type());
+    }
+
+    fn identifier_type(&self) -> Token {
+        match self.peek() {
+            'p' => return self.check_keyword(1, 3, "ink", TokenType::TokenAnd),
+            'b' => return self.check_keyword(1, 4, "rick", TokenType::TokenFun),
+            's' => return self.check_keyword(1, 4, "hine", TokenType::TokenPrint),
+            _ => Token::new(TokenType::TokenIdentifier, self),
+        }
+    }
+
+    fn check_keyword(
+        &self,
+        _start: usize,
+        _length: usize,
+        _rest: &'s str,
+        _type: TokenType,
+    ) -> Token {
+        if self.str_at_range(self.current + _start, _length) == _rest {
+            return Token::new(_type, self);
+        }
+        return Token::new(TokenType::TokenIdentifier, self);
+    }
+
+    fn str_at_range(&self, start: usize, length: usize) -> &str {
+        let sub_str = match self.source.get(start..start + length) {
+            Some(s) => s,
+            None => todo!("Handle case none"),
+        };
+
+        sub_str
     }
 
     fn lex_number(&mut self, current_char: char) -> Token {
