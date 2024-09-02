@@ -1,8 +1,11 @@
-use std::str::Chars;
-
 use crate::lexer::Scanner;
-use crate::lexer::TokenType;
 
 pub fn compile(source: &String) -> () {
     let mut lexer = Scanner::new(source);
+    let tokens = lexer.scan_tokens();
+
+    for token in tokens {
+        //TODO remove, only tmp
+        println!("{} : {}", token.source_str, token._type);
+    }
 }

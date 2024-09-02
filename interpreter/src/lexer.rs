@@ -4,7 +4,7 @@
 
 // Types of language tokens
 
-use std::str::Chars;
+use std::fmt;
 
 // Types of language tokens
 #[derive(Eq, PartialEq, Debug, Copy, Clone, Hash)]
@@ -55,10 +55,21 @@ pub enum TokenType {
     TokenEOF,
 }
 
-struct Token {
-    _type: TokenType,
-    start: String,
-    line: usize,
+impl fmt::Display for TokenType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            TokenType::TokenVar => write!(f, "Token VAR"),
+            TokenType::TokenEOF => write!(f, "Token EOF"),
+            TokenType::TokenIdentifier => write!(f, "Token IDENTIFIER"),
+            _ => todo!(),
+        }
+    }
+}
+
+pub struct Token {
+    pub _type: TokenType,
+    pub source_str: String,
+    pub line: usize,
 }
 
 // Scanner is used to tokenize the source string
@@ -86,11 +97,12 @@ impl<'s> Scanner<'s> {
             self.start = self.current;
 
             self.scan_token();
+            println!("Added token");
         }
 
         self.tokens.push(Token {
             _type: TokenType::TokenEOF,
-            start: "".to_string(),
+            source_str: "EOF".to_string(),
             line: self.line,
         });
 
@@ -99,14 +111,6 @@ impl<'s> Scanner<'s> {
 
     fn scan_token(&mut self) -> () {
         let current_char = self.advance();
-
-        if current_char.is_numeric() {
-            self.lex_number(current_char);
-        }
-
-        if current_char.is_alphabetic() {
-            self.lex_identifier();
-        }
 
         match current_char {
             '\n' => self.line += 1,
@@ -179,7 +183,15 @@ impl<'s> Scanner<'s> {
                 let res = self.lex_string();
                 self.tokens.push(res);
             }
-            _ => !todo!(),
+            _ => {
+                if current_char.is_numeric() {
+                    self.lex_number(current_char);
+                }
+
+                if current_char.is_alphabetic() {
+                    self.lex_identifier();
+                }
+            }
         }
 
         Token::error_token("Unexpected character.".to_string(), self);
@@ -190,38 +202,30 @@ impl<'s> Scanner<'s> {
             self.advance();
         }
 
-        self.tokens.push(self.identifier_type());
+        let value: &str = self.source[self.start..self.current].into();
+
+        self.tokens
+            .push(Token::new(self.match_keyword(value), self));
     }
 
-    fn identifier_type(&self) -> Token {
-        match self.peek() {
-            'p' => return self.check_keyword(1, 3, "ink", TokenType::TokenAnd),
-            'b' => return self.check_keyword(1, 4, "rick", TokenType::TokenFun),
-            's' => return self.check_keyword(1, 4, "hine", TokenType::TokenPrint),
-            _ => Token::new(TokenType::TokenIdentifier, self),
+    fn match_keyword(&self, word: &str) -> TokenType {
+        match word {
+            "and" => TokenType::TokenAnd,
+            "class" => TokenType::TokenClass,
+            "else" => TokenType::TokenElse,
+            "false" => TokenType::TokenFalse,
+            "time" => TokenType::TokenFor,
+            "brick" => TokenType::TokenFun,
+            "if" => TokenType::TokenIf,
+            "nil" => TokenType::TokenNil,
+            "or" => TokenType::TokenOr,
+            "shine" => TokenType::TokenPrint,
+            "return" => TokenType::TokenReturn,
+            "true" => TokenType::TokenTrue,
+            "pink" => TokenType::TokenVar,
+            "echoes" => TokenType::TokenWhile,
+            _ => TokenType::TokenIdentifier,
         }
-    }
-
-    fn check_keyword(
-        &self,
-        _start: usize,
-        _length: usize,
-        _rest: &'s str,
-        _type: TokenType,
-    ) -> Token {
-        if self.str_at_range(self.current + _start, _length) == _rest {
-            return Token::new(_type, self);
-        }
-        return Token::new(TokenType::TokenIdentifier, self);
-    }
-
-    fn str_at_range(&self, start: usize, length: usize) -> &str {
-        let sub_str = match self.source.get(start..start + length) {
-            Some(s) => s,
-            None => todo!("Handle case none"),
-        };
-
-        sub_str
     }
 
     fn lex_number(&mut self, current_char: char) -> Token {
@@ -258,6 +262,10 @@ impl<'s> Scanner<'s> {
     }
 
     fn peek(&self) -> char {
+        if self.is_at_end() {
+            return '\0';
+        }
+
         return self.source.chars().nth(self.current).unwrap_or_else(|| {
             panic!(
                 "Error in peek(). No character at index {}. Last character was {}",
@@ -274,9 +282,9 @@ impl<'s> Scanner<'s> {
             .nth(self.current + 1)
             .unwrap_or_else(|| {
                 panic!(
-                    "Error in peek_next(). No character at index {}. Last character was {}",
+                    "Error in peek_next(). No character at index {}. Current character was {}",
                     self.current,
-                    self.source.chars().nth(self.current - 1).unwrap()
+                    self.source.chars().nth(self.current).unwrap()
                 )
             });
     }
@@ -298,13 +306,13 @@ impl<'s> Scanner<'s> {
     }
 
     fn is_at_end(&self) -> bool {
-        return self.current > self.source.len();
+        return self.current >= self.source.len();
     }
 
     fn advance(&mut self) -> char {
         let char = self.source.chars().nth(self.current).unwrap_or_else(|| {
             println!(
-                "No characters at index {} were found. Last character was {}.",
+                "In advance() no characters at index {} were found. Last character was {}.",
                 self.current,
                 self.source.chars().nth(self.current - 1).unwrap()
             );
@@ -321,14 +329,14 @@ impl Token {
     pub fn new(_type: TokenType, scanner: &Scanner) -> Token {
         Token {
             _type,
-            start: scanner.start.to_string(),
+            source_str: scanner.source.to_string(),
             line: scanner.line,
         }
     }
     pub fn error_token(msg: String, scanner: &Scanner) -> Token {
         Token {
             _type: TokenType::TokenError,
-            start: msg,
+            source_str: msg,
             line: scanner.line,
         }
     }
