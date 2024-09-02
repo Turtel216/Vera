@@ -82,6 +82,7 @@ pub struct Scanner<'s> {
 }
 
 impl<'s> Scanner<'s> {
+    // Instantiate The Scanner
     pub fn new(source: &'s str) -> Scanner<'s> {
         Scanner {
             source,
@@ -92,7 +93,9 @@ impl<'s> Scanner<'s> {
         }
     }
 
+    // Tokenize the source string and return a Token Vector
     pub fn scan_tokens(&mut self) -> &Vec<Token> {
+        // Tokenize the source string
         while !self.is_at_end() {
             self.start = self.current;
 
@@ -100,6 +103,7 @@ impl<'s> Scanner<'s> {
             println!("Added token");
         }
 
+        // Append the 'End Of Line' Token
         self.tokens.push(Token {
             _type: TokenType::TokenEOF,
             source_str: "EOF".to_string(),
@@ -109,6 +113,7 @@ impl<'s> Scanner<'s> {
         return &self.tokens;
     }
 
+    // Scan each character and add the tokens to the Token vector
     fn scan_token(&mut self) -> () {
         let current_char = self.advance();
 
@@ -132,9 +137,20 @@ impl<'s> Scanner<'s> {
                 .push(Token::new(TokenType::TokenSemicolon, self)),
             '.' => self.tokens.push(Token::new(TokenType::TokenDot, self)),
             '-' => self.tokens.push(Token::new(TokenType::TokenMinus, self)),
-            '+' => self.tokens.push(Token::new(TokenType::TokenPlus, self)),
             '*' => self.tokens.push(Token::new(TokenType::TokenStar, self)),
+            ',' => self.tokens.push(Token::new(TokenType::TokenComma, self)),
+            '+' => {
+                // Check if its a two character token
+                let res = if self.match_next('+') {
+                    TokenType::TokenPlusPlus
+                } else {
+                    TokenType::TokenPlus
+                };
+
+                self.tokens.push(Token::new(res, self));
+            }
             '=' => {
+                // Check if its a two character token
                 let res = if self.match_next('=') {
                     TokenType::TokenEqualEqual
                 } else {
@@ -144,6 +160,7 @@ impl<'s> Scanner<'s> {
                 self.tokens.push(Token::new(res, self));
             }
             '!' => {
+                // Check if its a two character token
                 let res = if self.match_next('=') {
                     TokenType::TokenBangEqual
                 } else {
@@ -153,6 +170,7 @@ impl<'s> Scanner<'s> {
                 self.tokens.push(Token::new(res, self));
             }
             '<' => {
+                // Check if its a two character token
                 let res = if self.match_next('=') {
                     TokenType::TokenLessEqual
                 } else {
@@ -162,6 +180,7 @@ impl<'s> Scanner<'s> {
                 self.tokens.push(Token::new(res, self));
             }
             '>' => {
+                // Check if its a two character token
                 let res = if self.match_next('=') {
                     TokenType::TokenGreaterEqual
                 } else {
@@ -171,6 +190,7 @@ impl<'s> Scanner<'s> {
                 self.tokens.push(Token::new(res, self));
             }
             '/' => {
+                // Check if its a two character token
                 if self.peek_next() == '/' {
                     while self.peek() != '\n' && !self.is_at_end() {
                         self.advance();
@@ -180,6 +200,7 @@ impl<'s> Scanner<'s> {
                 }
             }
             '"' => {
+                // String literal
                 let res = self.lex_string();
                 self.tokens.push(res);
             }
@@ -189,6 +210,7 @@ impl<'s> Scanner<'s> {
                 }
 
                 if current_char.is_alphabetic() {
+                    // Add identifier or Keyword
                     self.lex_identifier();
                 }
             }
@@ -197,6 +219,7 @@ impl<'s> Scanner<'s> {
         Token::error_token("Unexpected character.".to_string(), self);
     }
 
+    // Scan for identifier or keyword and add its type to the Token Vector
     fn lex_identifier(&mut self) -> () {
         while self.peek().is_alphabetic() || self.peek().is_numeric() {
             self.advance();
@@ -208,6 +231,8 @@ impl<'s> Scanner<'s> {
             .push(Token::new(self.match_keyword(value), self));
     }
 
+    // Check if identifier is a keyword, return its type. If its not a keyword return identifier
+    // type
     fn match_keyword(&self, word: &str) -> TokenType {
         match word {
             "and" => TokenType::TokenAnd,
@@ -228,6 +253,7 @@ impl<'s> Scanner<'s> {
         }
     }
 
+    // Scan number and add its type to the Token Vector
     fn lex_number(&mut self, current_char: char) -> Token {
         while current_char.is_numeric() {
             self.advance();
@@ -245,6 +271,7 @@ impl<'s> Scanner<'s> {
         return Token::new(TokenType::TokenNumber, self);
     }
 
+    // Scan string and add its type to the Token Vector
     fn lex_string(&mut self) -> Token {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
@@ -261,6 +288,7 @@ impl<'s> Scanner<'s> {
         return Token::new(TokenType::TokenString, self);
     }
 
+    // Get current character. Get \0 if at the end
     fn peek(&self) -> char {
         if self.is_at_end() {
             return '\0';
@@ -275,7 +303,12 @@ impl<'s> Scanner<'s> {
         });
     }
 
+    // Get next character. Get \0 if the next character is at the end
     fn peek_next(&self) -> char {
+        if self.is_at_end() {
+            return '\0';
+        }
+
         return self
             .source
             .chars()
@@ -289,6 +322,7 @@ impl<'s> Scanner<'s> {
             });
     }
 
+    // Check if the next character is the expected character
     fn match_next(&mut self, expected: char) -> bool {
         if self.is_at_end() {
             return false;
@@ -305,10 +339,12 @@ impl<'s> Scanner<'s> {
         return next_char != expected;
     }
 
+    // Check if scanner reached the end of source string
     fn is_at_end(&self) -> bool {
         return self.current >= self.source.len();
     }
 
+    // Get current char and continue to next character
     fn advance(&mut self) -> char {
         let char = self.source.chars().nth(self.current).unwrap_or_else(|| {
             println!(
@@ -326,6 +362,7 @@ impl<'s> Scanner<'s> {
 }
 
 impl Token {
+    // Create a new Token
     pub fn new(_type: TokenType, scanner: &Scanner) -> Token {
         Token {
             _type,
@@ -333,6 +370,7 @@ impl Token {
             line: scanner.line,
         }
     }
+    // Create an error Token, This type of Token has a msg as its source_str
     pub fn error_token(msg: String, scanner: &Scanner) -> Token {
         Token {
             _type: TokenType::TokenError,

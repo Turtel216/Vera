@@ -6,6 +6,6 @@ pub fn compile(source: &String) -> () {
 
     for token in tokens {
         //TODO remove, only tmp
-        println!("{} : {}", token.source_str, token._type);
+        println!("{} : {} : {}", token.source_str, token._type, token.line);
     }
 }
