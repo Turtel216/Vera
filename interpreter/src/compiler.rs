@@ -112,10 +112,14 @@ impl<'c> Compiler<'c> {
         self.emit_constant(Value { value });
     }
 
-    fn make_constant(&self, value: Value) -> OpCode {
-        let constant = self.chunk.add_constant(value);
+    fn make_constant(&mut self, value: Value) -> OpCode {
+        let constant = u8::from(self.chunk.add_constant(value));
 
-        return constant; //TODO
+        if constant > u8::MAX {
+            println!("Too many constants in one chunk.");
+            return OpCode::OpValue(0);
+        }
+        return OpCode::OpValue(constant); //TODO
     }
 
     fn emit_byte(&mut self, byte: OpCode) -> () {
@@ -129,7 +133,8 @@ impl<'c> Compiler<'c> {
     }
 
     fn emit_constant(&mut self, value: Value) -> () {
-        self.emit_bytes(OpCode::OpConstant, self.make_constant(value));
+        let constant = self.make_constant(value);
+        self.emit_bytes(OpCode::OpConstant, constant);
     }
 
     fn emit_return(&mut self) -> () {

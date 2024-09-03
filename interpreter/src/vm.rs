@@ -74,6 +74,7 @@ impl<'v> VM<'v> {
                     let div = value_a.value / value_b.value;
                     self.push(Value { value: div });
                 }
+                Some(_) => todo!(),
                 None => return InterpretResult::InterpretRuneTimeError,
             }
         }

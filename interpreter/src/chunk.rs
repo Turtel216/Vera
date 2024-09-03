@@ -4,6 +4,7 @@
 
 // Byte code instructions
 #[derive(Copy, Clone)]
+#[repr(u8)]
 pub enum OpCode {
     OpReturn,
     OpConstant,
@@ -12,6 +13,7 @@ pub enum OpCode {
     OpSubtract,
     OpMultiply,
     OpDivide,
+    OpValue(u8),
 }
 
 use std::usize;
@@ -46,8 +48,9 @@ impl<'c> Chunk {
         self.constants.free_value_array();
     }
     // Add a constant value to chunk
-    pub fn add_constant(&mut self, value: Value) -> usize {
+    pub fn add_constant(&mut self, value: Value) -> u8 {
         self.constants.write_value_array(value);
-        self.constants.array.len()
+        let result = self.constants.array.len().try_into();
+        result.unwrap()
     }
 }
