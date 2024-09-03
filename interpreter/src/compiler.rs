@@ -1,3 +1,7 @@
+// Copyright 2024 Dimitrios Papakonstantinou. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file
+
 use crate::{
     chunk::Chunk,
     lexer::{Token, TokenType},
@@ -5,8 +9,9 @@ use crate::{
 
 pub struct Compiler<'c> {
     current: usize,
-    previous: usize,
     tokens: &'c Vec<Token>,
+    had_error: bool,
+    panic_mode: bool,
 }
 
 impl<'c> Compiler<'c> {
@@ -14,15 +19,19 @@ impl<'c> Compiler<'c> {
         return Compiler {
             tokens,
             current: 0,
-            previous: 0,
+            had_error: false,
+            panic_mode: false,
         };
     }
     pub fn compile(&mut self, source: &'c String, chunk: Chunk) -> bool {
+        self.had_error = false;
+        self.panic_mode = false;
+
         self.advance();
         self.expression();
         self.consume(TokenType::TokenEOF, "Expected end of expression.");
 
-        true
+        return !self.had_error;
     }
 
     fn advance(&mut self) -> () {
@@ -32,15 +41,45 @@ impl<'c> Compiler<'c> {
             }
 
             // Error encountered, throw compiler error
-            Compiler::error_at_current(&token.source_str);
+            self.error_at_current(&token.source_str);
         }
     }
 
     fn expression(&mut self) -> () {}
 
-    fn consume(&mut self, _type: TokenType, _msg: &str) -> () {}
+    fn consume(&mut self, _type: TokenType, msg: &'c str) -> () {
+        if self.tokens[self.current]._type == _type {
+            self.advance();
+            return;
+        }
 
-    fn error_at_current(msg: &'c str) -> () {
-        panic!("error on Token string: {}", msg); //TODO
+        self.error_at_current(msg);
+    }
+
+    fn error_at_current(&mut self, msg: &'c str) -> () {
+        self.error_at(msg, self.current);
+    }
+
+    fn error(&mut self, msg: &'c str) -> () {
+        self.error_at(msg, self.current - 1);
+    }
+
+    fn error_at(&mut self, msg: &'c str, index: usize) -> () {
+        if self.panic_mode {
+            return;
+        }
+        self.panic_mode = true;
+
+        let token = &self.tokens[index];
+        print!("[line {}] Error", token.line);
+
+        match token._type {
+            TokenType::TokenEOF => print!(" at end"),
+            TokenType::TokenError => print!(""),
+            _ => print!(" at '{}'", token.source_str),
+        };
+
+        println!(": {}", msg);
+        self.had_error = true;
     }
 }
