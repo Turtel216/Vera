@@ -28,6 +28,16 @@ pub struct Chunk {
     pub line: Vec<usize>,      // Line of each chunk in Vera source code
 }
 
+impl Clone for Chunk {
+    fn clone(&self) -> Self {
+        Chunk {
+            code: self.code.clone(),
+            constants: self.constants.clone(),
+            line: self.line.clone(),
+        }
+    }
+}
+
 impl<'c> Chunk {
     // Create a new Chunk
     pub fn new() -> Chunk {

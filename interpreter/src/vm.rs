@@ -13,15 +13,16 @@ use crate::chunk::OpCode;
 use crate::compiler::Compiler;
 
 // Vera stack based Virtual Machine
-pub struct VM<'v> {
-    pub chunk: &'v mut Chunk, // Byte code chunk
-    pub ip: Vec<OpCode>,      // VM instructions
-    pub stack: Vec<Value>,    // VM value stack
+pub struct VM {
+    pub chunk: Chunk,      // Byte code chunk
+    pub ip: Vec<OpCode>,   // VM instructions
+    pub stack: Vec<Value>, // VM value stack
 }
 
+use crate::lexer::Scanner;
 use crate::value::Value;
 
-impl<'v> VM<'v> {
+impl VM {
     // Close vm
     // TODO
     pub fn free_vm(&mut self) -> () {}
@@ -80,24 +81,27 @@ impl<'v> VM<'v> {
         }
     }
     // Interpret a chunk of bytecode
-    pub fn interpret(&mut self, _source: &String) -> InterpretResult {
+    pub fn interpret(&mut self, source: &String) -> InterpretResult {
         // Compile source file
-        let chunk = Chunk::new();
+        let mut chunk = Chunk::new();
+        let mut scanner = Scanner::new(source);
+        let tokens = scanner.scan_tokens();
+        let mut parser = Compiler::new(tokens, &mut chunk);
 
         // Compile source string
-        if !Compiler::compile(_source, &chunk) {
+        if !parser.compile() {
             chunk.free_chunk();
             return InterpretResult::InterpretCompileError;
         }
 
         // Init vm
-        self.chunk = &mut chunk;
-        self.ip = self.chunk.code;
+        self.chunk = chunk.clone().clone();
+        self.ip = self.chunk.code.clone();
 
         // Run instructions
         let result = self.run();
 
-        chunk.free_chunk();
+        //chunk.free_chunk();
 
         return result;
     }

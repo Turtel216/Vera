@@ -38,7 +38,7 @@ fn repl() -> () {
 
     // Initialize vm
     let mut _vm = VM {
-        chunk: &mut Chunk::new(),
+        chunk: Chunk::new(),
         ip: Vec::new(),
         stack: Vec::new(),
     };
@@ -72,7 +72,7 @@ fn run_file(_path: &String) -> std::io::Result<()> {
 
     // Initialize vm
     let mut _vm = VM {
-        chunk: &mut Chunk::new(),
+        chunk: Chunk::new(),
         ip: Vec::new(),
         stack: Vec::new(),
     };

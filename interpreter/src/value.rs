@@ -17,6 +17,14 @@ pub struct ValueArray {
     pub array: Vec<Value>,
 }
 
+impl Clone for ValueArray {
+    fn clone(&self) -> Self {
+        ValueArray {
+            array: self.array.clone(),
+        }
+    }
+}
+
 impl ValueArray {
     pub fn new() -> ValueArray {
         ValueArray { array: Vec::new() }

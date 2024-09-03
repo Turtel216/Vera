@@ -25,13 +25,13 @@ enum Precedence {
 pub struct Compiler<'c> {
     current: usize,
     tokens: &'c Vec<Token>,
-    chunk: Chunk,
+    pub chunk: &'c mut Chunk,
     had_error: bool,
     panic_mode: bool,
 }
 
 impl<'c> Compiler<'c> {
-    pub fn new(tokens: &'c Vec<Token>, chunk: Chunk) -> Self {
+    pub fn new(tokens: &'c Vec<Token>, chunk: &'c mut Chunk) -> Self {
         return Compiler {
             tokens,
             current: 0,
@@ -40,10 +40,9 @@ impl<'c> Compiler<'c> {
             chunk,
         };
     }
-    pub fn compile(&mut self, source: &'c String, chunk: Chunk) -> bool {
+    pub fn compile(&mut self) -> bool {
         self.had_error = false;
         self.panic_mode = false;
-        self.chunk = chunk;
 
         self.advance();
         self.expression();
