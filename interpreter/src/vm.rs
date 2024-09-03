@@ -10,7 +10,7 @@ pub enum InterpretResult {
 
 use crate::chunk::Chunk;
 use crate::chunk::OpCode;
-use crate::compiler::compile;
+use crate::compiler::Compiler;
 
 // Vera stack based Virtual Machine
 pub struct VM<'v> {
@@ -81,28 +81,24 @@ impl<'v> VM<'v> {
     // Interpret a chunk of bytecode
     pub fn interpret(&mut self, _source: &String) -> InterpretResult {
         // Compile source file
-        compile(_source);
+        let chunk = Chunk::new();
 
-        // The interpreter run without any errors
-        return InterpretResult::InterpretOk;
-
-        /*
-        self.chunk = chunk;
-
-        // Add all op codes to vm instraction codes
-        let code_iter = self.chunk.code.iter().rev();
-        for op_code in code_iter {
-            self.ip.push(*op_code);
+        // Compile source string
+        if !Compiler::compile(_source, &chunk) {
+            chunk.free_chunk();
+            return InterpretResult::InterpretCompileError;
         }
 
-        // Add all constants to vm stack
-        let _value_iter = self.chunk.constants.array.iter().rev();
-        for value_ in _value_iter {
-            self.stack.push(*value_);
-        }
+        // Init vm
+        self.chunk = &mut chunk;
+        self.ip = self.chunk.code;
 
-        self.run()
-        */
+        // Run instructions
+        let result = self.run();
+
+        chunk.free_chunk();
+
+        return result;
     }
 
     // Clear stack

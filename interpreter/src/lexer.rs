@@ -74,11 +74,11 @@ pub struct Token {
 
 // Scanner is used to tokenize the source string
 pub struct Scanner<'s> {
-    source: &'s str,
-    tokens: Vec<Token>,
-    start: usize,
-    current: usize,
-    line: usize,
+    pub source: &'s str,
+    pub tokens: Vec<Token>,
+    pub start: usize,
+    pub current: usize,
+    pub line: usize,
 }
 
 impl<'s> Scanner<'s> {
