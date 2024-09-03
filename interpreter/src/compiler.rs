@@ -5,7 +5,22 @@
 use crate::{
     chunk::{Chunk, OpCode},
     lexer::{Token, TokenType},
+    value::Value,
 };
+
+enum Precedence {
+    PrecNone,
+    PrecAssignment, // =
+    PrecOr,         // or
+    PrecAnd,        // and
+    PrecEquality,   // == !=
+    PrecComparsion, // < > <= >=
+    PrecTerm,       // + -
+    PrcFactor,      // * /
+    PrecUnary,      // ! -
+    PrecCall,       // . ()
+    PrecPrimary,
+}
 
 pub struct Compiler<'c> {
     current: usize,
@@ -53,7 +68,9 @@ impl<'c> Compiler<'c> {
         }
     }
 
-    fn expression(&mut self) -> () {}
+    fn expression(&mut self) -> () {
+        self.parse_precedence(Precedence::PrecAssignment);
+    }
 
     fn consume(&mut self, _type: TokenType, msg: &'c str) -> () {
         if self.tokens[self.current]._type == _type {
@@ -64,6 +81,43 @@ impl<'c> Compiler<'c> {
         self.error_at_current(msg);
     }
 
+    fn grouping(&mut self) -> () {
+        self.expression();
+        self.consume(TokenType::TokenRightParen, "Expect ')' after expression.");
+    }
+
+    fn unary(&mut self) -> () {
+        let operator_type = self.tokens[self.current - 1]._type;
+
+        // Compile the operand
+        self.parse_precedence(Precedence::PrecUnary);
+
+        // Emit le operator instuction
+        match operator_type {
+            TokenType::TokenMinus => self.emit_byte(OpCode::OpNegate),
+            _ => return,
+        }
+    }
+
+    fn parse_precedence(&mut self, precedence: Precedence) -> () {
+        todo!()
+    }
+
+    fn parse_number(&mut self) -> () {
+        let value = match self.tokens[self.current - 1].source_str.parse() {
+            Ok(v) => v,
+            Err(_) => 0.0, //TODO proper error handling
+        };
+
+        self.emit_constant(Value { value });
+    }
+
+    fn make_constant(&self, value: Value) -> OpCode {
+        let constant = self.chunk.add_constant(value);
+
+        return constant; //TODO
+    }
+
     fn emit_byte(&mut self, byte: OpCode) -> () {
         self.chunk
             .write_chunk(byte, self.tokens[self.current - 1].line);
@@ -72,6 +126,10 @@ impl<'c> Compiler<'c> {
     fn emit_bytes(&mut self, byte1: OpCode, byte2: OpCode) -> () {
         self.emit_byte(byte1);
         self.emit_byte(byte2);
+    }
+
+    fn emit_constant(&mut self, value: Value) -> () {
+        self.emit_bytes(OpCode::OpConstant, self.make_constant(value));
     }
 
     fn emit_return(&mut self) -> () {
