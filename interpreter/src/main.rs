@@ -37,7 +37,7 @@ fn repl() -> () {
     let mut str = String::new();
 
     // Initialize vm
-    let mut _vm = VM {
+    let mut vm = VM {
         chunk: Chunk::new(),
         ip: Vec::new(),
         stack: Vec::new(),
@@ -57,7 +57,7 @@ fn repl() -> () {
             str.pop();
         }
 
-        _vm.interpret(&str);
+        vm.interpret(&str);
         str.clear();
     }
 }
@@ -71,7 +71,7 @@ fn run_file(_path: &String) -> std::io::Result<()> {
     buf_reader.read_to_string(&mut contents)?;
 
     // Initialize vm
-    let mut _vm = VM {
+    let mut vm = VM {
         chunk: Chunk::new(),
         ip: Vec::new(),
         stack: Vec::new(),
@@ -80,9 +80,9 @@ fn run_file(_path: &String) -> std::io::Result<()> {
     // Interpret each line
     let lines = contents.lines();
     for line in lines {
-        _vm.interpret(&line.to_string());
+        vm.interpret(&line.to_string());
     }
 
-    _vm.free_vm();
+    vm.free_vm();
     Ok(())
 }
