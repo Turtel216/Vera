@@ -184,12 +184,11 @@ impl<'c> Compiler<'c> {
 
     fn advance(&mut self) -> () {
         for token in self.tokens {
-            if token._type != TokenType::TokenError {
-                break;
+            if token._type == TokenType::TokenError {
+                // Error encountered, throw compiler error
+                self.error_at_current(&token.source_str);
             }
-
-            // Error encountered, throw compiler error
-            self.error_at_current(&token.source_str);
+            break;
         }
     }
 

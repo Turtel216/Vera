@@ -346,18 +346,9 @@ impl<'s> Scanner<'s> {
 
     // Get current char and continue to next character
     fn advance(&mut self) -> char {
-        let char = self.source.chars().nth(self.current).unwrap_or_else(|| {
-            println!(
-                "In advance() no characters at index {} were found. Last character was {}.",
-                self.current,
-                self.source.chars().nth(self.current - 1).unwrap()
-            );
-            std::process::exit(1);
-        });
-
+        let char = self.peek();
         self.current += 1;
-
-        return char;
+        char
     }
 }
 
