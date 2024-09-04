@@ -112,12 +112,14 @@ impl<'c> Compiler<'c> {
     }
 
     fn make_constant(&mut self, value: Value) -> OpCode {
-        let constant = u8::from(self.chunk.add_constant(value));
+        let constant = u8::from(match self.chunk.add_constant(value) {
+            Ok(v) => v,
+            Err(_) => {
+                println!("Too many constants in one chunk.");
+                return OpCode::OpValue(0);
+            }
+        });
 
-        if constant > u8::MAX {
-            println!("Too many constants in one chunk.");
-            return OpCode::OpValue(0);
-        }
         return OpCode::OpValue(constant); //TODO
     }
 
