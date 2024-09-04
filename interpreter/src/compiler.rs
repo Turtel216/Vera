@@ -25,21 +25,39 @@ enum Precedence {
     PrecPrimary,
 }
 
+impl Precedence {
+    fn next(&self) -> Precedence {
+        match self {
+            Precedence::PrecNone => Precedence::PrecAssignment,
+            Precedence::PrecAssignment => Precedence::PrecOr,
+            Precedence::PrecOr => Precedence::PrecAnd,
+            Precedence::PrecAnd => Precedence::PrecEquality,
+            Precedence::PrecEquality => Precedence::PrecComparsion,
+            Precedence::PrecComparsion => Precedence::PrecTerm,
+            Precedence::PrecTerm => Precedence::PrecFactor,
+            Precedence::PrecFactor => Precedence::PrecUnary,
+            Precedence::PrecUnary => Precedence::PrecCall,
+            Precedence::PrecCall => Precedence::PrecPrimary,
+            Precedence::PrecPrimary => Precedence::PrecNone,
+        }
+    }
+}
+
 type ParseFn<'sourcecode> = fn(&mut Compiler<'sourcecode>) -> ();
 
 #[derive(Copy, Clone)]
-struct ParseRule<'sourcecode> {
+struct ParseRule<'p> {
     precedence: Precedence,
-    prefix: Option<ParseFn<'sourcecode>>,
-    infix: Option<ParseFn<'sourcecode>>,
+    prefix: Option<ParseFn<'p>>,
+    infix: Option<ParseFn<'p>>,
 }
 
-impl<'sourcecode> ParseRule<'sourcecode> {
+impl<'p> ParseRule<'p> {
     fn new(
-        prefix: Option<ParseFn<'sourcecode>>,
-        infix: Option<ParseFn<'sourcecode>>,
+        prefix: Option<ParseFn<'p>>,
+        infix: Option<ParseFn<'p>>,
         precedence: Precedence,
-    ) -> ParseRule<'sourcecode> {
+    ) -> ParseRule<'p> {
         ParseRule {
             prefix,
             infix,
@@ -207,17 +225,49 @@ impl<'c> Compiler<'c> {
     }
 
     fn binary(&mut self) -> () {
-        todo!()
+        let operator_type = self.tokens[self.current - 1]._type;
+        let rule = self.get_rule(operator_type);
+        self.parse_precedence(rule.precedence.next());
+
+        match operator_type {
+            TokenType::TokenPlus => self.emit_byte(OpCode::OpAdd),
+            TokenType::TokenMinus => self.emit_byte(OpCode::OpSubtract),
+            TokenType::TokenStar => self.emit_byte(OpCode::OpMultiply),
+            TokenType::TokenSlash => self.emit_byte(OpCode::OpDivide),
+            _ => return,
+        }
     }
 
-    fn get_sule(&mut self, _type: TokenType) -> () {}
-
     fn parse_precedence(&mut self, precedence: Precedence) -> () {
-        todo!()
+        self.advance();
+        let prefix_rule = self.get_rule(self.tokens[self.current - 1]._type).prefix;
+        let prefix_rule = match prefix_rule {
+            Some(rule) => rule,
+            None => {
+                self.error("Expected expression");
+                return;
+            }
+        };
+
+        prefix_rule(self);
+
+        while self.is_lower_precedence(precedence) {
+            self.advance();
+            let infix_rule = self
+                .get_rule(self.tokens[self.current - 1]._type)
+                .infix
+                .unwrap();
+            infix_rule(self);
+        }
     }
 
     fn get_rule(&self, _type: TokenType) -> ParseRule<'c> {
         return self.rules.get(&_type).cloned().unwrap();
+    }
+
+    fn is_lower_precedence(&self, precedence: Precedence) -> bool {
+        let current_precedence = self.get_rule(self.tokens[self.current]._type).precedence;
+        precedence <= current_precedence
     }
 
     fn parse_number(&mut self) -> () {
