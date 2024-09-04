@@ -103,23 +103,24 @@ impl<'s> Scanner<'s> {
             println!("Added token");
         }
 
-        // Append the 'End Of Line' Token
-        self.tokens.push(Token {
-            _type: TokenType::TokenEOF,
-            source_str: "EOF".to_string(),
-            line: self.line,
-        });
-
         return &self.tokens;
     }
 
     // Scan each character and add the tokens to the Token vector
     fn scan_token(&mut self) -> () {
-        let current_char = self.advance();
+        self.skip_whitespace();
 
-        match current_char {
-            '\n' => self.line += 1,
-            ' ' | '\r' | '\t' => (),
+        if self.is_at_end() {
+            // Append the 'End Of Line' Token
+            self.tokens.push(Token {
+                _type: TokenType::TokenEOF,
+                source_str: "EOF".to_string(),
+                line: self.line,
+            });
+            return;
+        }
+
+        match self.advance() {
             '(' => self
                 .tokens
                 .push(Token::new(TokenType::TokenLeftParen, self)),
@@ -204,15 +205,17 @@ impl<'s> Scanner<'s> {
                 let res = self.lex_string();
                 self.tokens.push(res);
             }
-            _ => {
-                if current_char.is_numeric() {
-                    self.lex_number(current_char);
+            c => {
+                if c.is_numeric() {
+                    self.lex_number(c);
+                    return;
+                } else if c.is_alphabetic() {
+                    self.lex_identifier();
+                    return;
                 }
 
-                if current_char.is_alphabetic() {
-                    // Add identifier or Keyword
-                    self.lex_identifier();
-                }
+                self.tokens
+                    .push(Token::error_token("Unexpected character".to_string(), self));
             }
         }
 
@@ -322,26 +325,39 @@ impl<'s> Scanner<'s> {
             });
     }
 
+    fn skip_whitespace(&mut self) -> () {
+        while !self.is_at_end() {
+            match self.peek() {
+                ' ' | '\r' | '\t' => {
+                    self.advance();
+                }
+                '\n' => {
+                    self.line += 1;
+                    self.advance();
+                }
+                '/' if self.peek_next() == '/' => {
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        self.advance();
+                    }
+                }
+                _ => return,
+            }
+        }
+    }
+
     // Check if the next character is the expected character
     fn match_next(&mut self, expected: char) -> bool {
-        if self.is_at_end() {
+        if self.is_at_end() || self.peek() != expected {
             return false;
+        } else {
+            self.current += 1;
+            return true;
         }
-
-        let next_char = self.source.chars().nth(self.current).unwrap_or_else(|| {
-            panic!(
-                "No character at index {}. Last character was {}",
-                self.current,
-                self.source.chars().nth(self.current - 1).unwrap()
-            )
-        });
-
-        return next_char != expected;
     }
 
     // Check if scanner reached the end of source string
     fn is_at_end(&self) -> bool {
-        return self.current >= self.source.len();
+        return self.current <= self.source.len();
     }
 
     // Get current char and continue to next character
