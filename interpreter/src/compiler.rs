@@ -2,12 +2,15 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file
 
+use std::{collections::HashMap, path::Prefix};
+
 use crate::{
     chunk::{Chunk, OpCode},
     lexer::{Token, TokenType},
     value::Value,
 };
 
+#[derive(Copy, Clone, PartialOrd, PartialEq)]
 enum Precedence {
     PrecNone,
     PrecAssignment, // =
@@ -16,10 +19,33 @@ enum Precedence {
     PrecEquality,   // == !=
     PrecComparsion, // < > <= >=
     PrecTerm,       // + -
-    PrcFactor,      // * /
+    PrecFactor,     // * /
     PrecUnary,      // ! -
     PrecCall,       // . ()
     PrecPrimary,
+}
+
+type ParseFn<'sourcecode> = fn(&mut Compiler<'sourcecode>) -> ();
+
+#[derive(Copy, Clone)]
+struct ParseRule<'sourcecode> {
+    precedence: Precedence,
+    prefix: Option<ParseFn<'sourcecode>>,
+    infix: Option<ParseFn<'sourcecode>>,
+}
+
+impl<'sourcecode> ParseRule<'sourcecode> {
+    fn new(
+        prefix: Option<ParseFn<'sourcecode>>,
+        infix: Option<ParseFn<'sourcecode>>,
+        precedence: Precedence,
+    ) -> ParseRule<'sourcecode> {
+        ParseRule {
+            prefix,
+            infix,
+            precedence,
+        }
+    }
 }
 
 pub struct Compiler<'c> {
@@ -28,16 +54,98 @@ pub struct Compiler<'c> {
     pub chunk: &'c mut Chunk,
     had_error: bool,
     panic_mode: bool,
+    rules: HashMap<TokenType, ParseRule<'c>>,
 }
 
 impl<'c> Compiler<'c> {
     pub fn new(tokens: &'c Vec<Token>, chunk: &'c mut Chunk) -> Self {
+        let mut rules = HashMap::new();
+        let mut rule = |kind, prefix, infix, precedence| {
+            rules.insert(kind, ParseRule::new(prefix, infix, precedence));
+        };
+
+        rule(
+            TokenType::TokenLeftParen,
+            Some(Compiler::grouping),
+            None,
+            Precedence::PrecNone,
+        );
+        rule(TokenType::TokenRightParen, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenLeftBrace, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenRightBrace, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenComma, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenDot, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenMinus,
+            Some(Compiler::unary),
+            Some(Compiler::binary),
+            Precedence::PrecTerm,
+        );
+        rule(
+            TokenType::TokenPlus,
+            None,
+            Some(Compiler::binary),
+            Precedence::PrecTerm,
+        );
+        rule(TokenType::TokenSemicolon, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenSlash,
+            None,
+            Some(Compiler::binary),
+            Precedence::PrecFactor,
+        );
+        rule(
+            TokenType::TokenStar,
+            None,
+            Some(Compiler::binary),
+            Precedence::PrecFactor,
+        );
+        rule(TokenType::TokenBang, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenBangEqual, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenEqual, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenEqualEqual, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenGreater, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenGreaterEqual,
+            None,
+            None,
+            Precedence::PrecNone,
+        );
+        rule(TokenType::TokenLess, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenLessEqual, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenIdentifier, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenString, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenNumber,
+            Some(Compiler::parse_number),
+            None,
+            Precedence::PrecNone,
+        );
+        rule(TokenType::TokenAnd, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenClass, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenElse, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenFalse, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenFor, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenFor, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenFun, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenIf, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenNil, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenOr, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenPrint, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenReturn, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenTrue, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenVar, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenWhile, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenError, None, None, Precedence::PrecNone);
+        rule(TokenType::TokenEOF, None, None, Precedence::PrecNone);
+
         return Compiler {
             tokens,
             current: 0,
             had_error: false,
             panic_mode: false,
             chunk,
+            rules,
         };
     }
     pub fn compile(&mut self) -> bool {
@@ -98,8 +206,18 @@ impl<'c> Compiler<'c> {
         }
     }
 
+    fn binary(&mut self) -> () {
+        todo!()
+    }
+
+    fn get_sule(&mut self, _type: TokenType) -> () {}
+
     fn parse_precedence(&mut self, precedence: Precedence) -> () {
         todo!()
+    }
+
+    fn get_rule(&self, _type: TokenType) -> ParseRule<'c> {
+        return self.rules.get(&_type).cloned().unwrap();
     }
 
     fn parse_number(&mut self) -> () {

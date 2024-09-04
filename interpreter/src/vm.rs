@@ -95,7 +95,7 @@ impl VM {
         }
 
         // Init vm
-        self.chunk = chunk.clone();
+        self.chunk = chunk;
         self.ip = self.chunk.code.clone();
 
         // Run instructions
