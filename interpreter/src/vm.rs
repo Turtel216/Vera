@@ -89,7 +89,6 @@ impl VM {
                     let div = value_a.value / value_b.value;
                     self.push(Value { value: div });
                 }
-                _ => return InterpretResult::InterpretRuneTimeError,
             }
             // Continue to next instruction
             self.current += 1;

@@ -13,7 +13,6 @@ pub enum OpCode {
     OpSubtract,
     OpMultiply,
     OpDivide,
-    OpValue,
 }
 
 use std::fmt;
@@ -28,8 +27,6 @@ impl fmt::Display for OpCode {
             OpCode::OpMultiply => write!(f, "OpMultiply"),
             OpCode::OpDivide => write!(f, "OpDivide"),
             OpCode::OpNegate => write!(f, "OpNegate"),
-            OpCode::OpValue => write!(f, "OpValue"),
-            _ => todo!(),
         }
     }
 }

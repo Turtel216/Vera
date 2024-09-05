@@ -233,11 +233,11 @@ impl<'s> Scanner<'s> {
         match word {
             "and" => TokenType::TokenAnd,
             "class" => TokenType::TokenClass,
-            "else" => TokenType::TokenElse,
+            "anybody" => TokenType::TokenElse,
             "false" => TokenType::TokenFalse,
             "time" => TokenType::TokenFor,
             "brick" => TokenType::TokenFun,
-            "if" => TokenType::TokenIf,
+            "outThere?" => TokenType::TokenIf,
             "nil" => TokenType::TokenNil,
             "or" => TokenType::TokenOr,
             "shine" => TokenType::TokenPrint,

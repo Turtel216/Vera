@@ -25,15 +25,21 @@ Variables in Vera are declared using the **pink** keyword.
 pink x = 5;
 ```
 
+Variables can also take the null. The root of all evil, null, in xanadu is called **money**
+
+```ruby 
+pink empty = money;
+```
+
 Procedures are declared using the **brick** keyword
 
 ```ruby 
 brick add(a, b) {
-    eclipse a + b;
+    goodbye a + b;
 }
 ```
 
-The **eclipse** keyword in the above example functions just as a return keyword in other languages
+The **goodbye** keyword in the above example functions just as a return keyword in other languages
 
 The procedure can later be called like this
 
@@ -51,7 +57,35 @@ shine "Hey you";
 
 ### Control flow
 
-while loops are declared using the **echoes keyword
+if statements are declared using the **outThere?** keyword
+
+```ruby 
+outThere?(1 == 1) {
+    shine "Hey you";
+}
+```
+
+else statements are declared using the **anybody** keyword
+
+```ruby 
+outThere?(1 == 2) {
+    shine "Hey you";
+} anybody {
+    shine "Not you";
+}
+```
+
+else if statements are declared using the **anybody outThere?** keyword
+
+```ruby 
+outThere?(1 == 2) {
+    shine "Hey you";
+} anybody outThere?(1 == 1) {
+    shine "Not you";
+}
+```
+
+while loops are declared using the **echoes** keyword
 
 ```ruby 
 echoes(1 == 1) {

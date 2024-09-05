@@ -26,9 +26,6 @@ impl Clone for ValueArray {
 }
 
 impl ValueArray {
-    pub fn new() -> ValueArray {
-        ValueArray { array: Vec::new() }
-    }
     pub fn write_value_array(&mut self, value: Value) -> () {
         self.array.push(value);
     }
