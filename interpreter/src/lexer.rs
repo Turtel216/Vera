@@ -63,6 +63,7 @@ impl fmt::Display for TokenType {
             TokenType::TokenIdentifier => write!(f, "Token IDENTIFIER"),
             TokenType::TokenNumber => write!(f, "Token Number"),
             TokenType::TokenPlus => write!(f, "Token Plus"),
+            TokenType::TokenMinus => write!(f, "Token Minus"),
             _ => todo!(),
         }
     }

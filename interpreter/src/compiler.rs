@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file
 
-use std::{collections::HashMap, path::Prefix};
+use std::collections::HashMap;
 
 use crate::{
     chunk::{Chunk, OpCode},
@@ -48,8 +48,8 @@ type ParseFn<'sourcecode> = fn(&mut Compiler<'sourcecode>) -> ();
 #[derive(Copy, Clone)]
 struct ParseRule<'p> {
     precedence: Precedence,
-    infix: Option<ParseFn<'p>>,
     prefix: Option<ParseFn<'p>>,
+    infix: Option<ParseFn<'p>>,
 }
 
 impl<'p> ParseRule<'p> {
@@ -59,9 +59,9 @@ impl<'p> ParseRule<'p> {
         precedence: Precedence,
     ) -> ParseRule<'p> {
         ParseRule {
+            precedence,
             prefix,
             infix,
-            precedence,
         }
     }
 }
@@ -78,7 +78,7 @@ pub struct Compiler<'c> {
 impl<'c> Compiler<'c> {
     pub fn new(tokens: &'c Vec<Token>, chunk: &'c mut Chunk) -> Self {
         let mut rules = HashMap::new();
-        let mut rule = |kind, infix, prefix, precedence| {
+        let mut rule = |kind, prefix, infix, precedence| {
             rules.insert(kind, ParseRule::new(prefix, infix, precedence));
         };
 
@@ -135,8 +135,8 @@ impl<'c> Compiler<'c> {
         rule(TokenType::TokenString, None, None, Precedence::PrecNone);
         rule(
             TokenType::TokenNumber,
-            None,
             Some(Compiler::parse_number),
+            None,
             Precedence::PrecNone,
         );
         rule(TokenType::TokenAnd, None, None, Precedence::PrecNone);
@@ -167,11 +167,6 @@ impl<'c> Compiler<'c> {
         };
     }
     pub fn compile(&mut self) -> bool {
-        self.had_error = false;
-        self.panic_mode = false;
-        self.current = 0;
-
-        self.advance();
         self.expression();
         self.consume(TokenType::TokenEOF, "Expected end of expression.");
 
@@ -184,11 +179,13 @@ impl<'c> Compiler<'c> {
     }
 
     fn advance(&mut self) -> () {
+        println!("Advanced!");
         self.current += 1;
 
-        if self.is_at_end() {
+        if self.current == self.tokens.len() {
             return;
         }
+
         if self.tokens[self.current]._type != TokenType::TokenError {
             return;
         }
@@ -247,10 +244,10 @@ impl<'c> Compiler<'c> {
 
     fn parse_precedence(&mut self, precedence: Precedence) -> () {
         self.advance();
-        let prefix_rule = self.get_rule(self.tokens[self.current - 1]._type).prefix;
-        let prefix_rule = match prefix_rule {
+        let prefix_rule = match self.get_rule(self.tokens[self.current - 1]._type).prefix {
             Some(rule) => rule,
             None => {
+                println!("On type: {}", self.tokens[self.current - 1]._type);
                 self.error("Expected expression");
                 return;
             }
@@ -286,16 +283,16 @@ impl<'c> Compiler<'c> {
         self.emit_constant(Value { value });
     }
 
-    fn make_constant(&mut self, value: Value) -> OpCode {
+    fn make_constant(&mut self, value: Value) -> u8 {
         let constant = u8::from(match self.chunk.add_constant(value) {
             Ok(v) => v,
             Err(_) => {
                 println!("Too many constants in one chunk.");
-                return OpCode::OpValue(0);
+                return 0;
             }
         });
 
-        return OpCode::OpValue(constant); //TODO
+        return constant - 1; //TODO
     }
 
     fn emit_byte(&mut self, byte: OpCode) -> () {
@@ -309,8 +306,8 @@ impl<'c> Compiler<'c> {
     }
 
     fn emit_constant(&mut self, value: Value) -> () {
-        let constant = self.make_constant(value);
-        self.emit_bytes(OpCode::OpConstant, constant);
+        let index = self.make_constant(value);
+        self.emit_byte(OpCode::OpConstant(index));
     }
 
     fn emit_return(&mut self) -> () {

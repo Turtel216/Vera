@@ -36,15 +36,9 @@ impl VM {
                     Value::print_value(self.pop());
                     return InterpretResult::InterpretOk;
                 }
-                Some(OpCode::OpConstant) => {
-                    let constant = self
-                        .chunk
-                        .constants
-                        .array
-                        .pop()
-                        .expect("Couldn't retrieve value from constants array");
-
-                    self.push(constant)
+                Some(OpCode::OpConstant(index)) => {
+                    let value = self.chunk.read_constant(index);
+                    self.push(value);
                 }
                 Some(OpCode::OpNegate) => {
                     let mut value = self.pop();
@@ -88,6 +82,10 @@ impl VM {
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens();
 
+        for token in tokens {
+            println!("Tokens: {}", token._type);
+        }
+
         let mut parser = Compiler::new(tokens, &mut chunk);
 
         // Compile source string
@@ -96,9 +94,15 @@ impl VM {
             return InterpretResult::InterpretCompileError;
         }
 
+        chunk.code.reverse();
+
         // Init vm
         self.chunk = chunk;
         self.ip = self.chunk.code.clone();
+
+        for code in self.ip.clone() {
+            println!("Code: {}", code);
+        }
 
         // Run instructions
         let result = self.run();

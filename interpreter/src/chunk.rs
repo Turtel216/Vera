@@ -7,13 +7,31 @@
 #[repr(u8)]
 pub enum OpCode {
     OpReturn,
-    OpConstant,
+    OpConstant(u8),
     OpNegate,
     OpAdd,
     OpSubtract,
     OpMultiply,
     OpDivide,
-    OpValue(u8),
+    OpValue,
+}
+
+use std::fmt;
+
+impl fmt::Display for OpCode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            OpCode::OpReturn => write!(f, "OpReturn"),
+            OpCode::OpConstant(_) => write!(f, "OpConstant"),
+            OpCode::OpAdd => write!(f, "OpAdd"),
+            OpCode::OpSubtract => write!(f, "OpSubtract"),
+            OpCode::OpMultiply => write!(f, "OpMultiply"),
+            OpCode::OpDivide => write!(f, "OpDivide"),
+            OpCode::OpNegate => write!(f, "OpNegate"),
+            OpCode::OpValue => write!(f, "OpValue"),
+            _ => todo!(),
+        }
+    }
 }
 
 use std::num::TryFromIntError;
@@ -63,5 +81,9 @@ impl<'c> Chunk {
         self.constants.write_value_array(value);
         let result = self.constants.array.len().try_into();
         result
+    }
+
+    pub fn read_constant(&self, index: u8) -> Value {
+        self.constants.array[index as usize]
     }
 }
