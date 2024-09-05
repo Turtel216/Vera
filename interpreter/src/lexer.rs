@@ -61,6 +61,8 @@ impl fmt::Display for TokenType {
             TokenType::TokenVar => write!(f, "Token VAR"),
             TokenType::TokenEOF => write!(f, "Token EOF"),
             TokenType::TokenIdentifier => write!(f, "Token IDENTIFIER"),
+            TokenType::TokenNumber => write!(f, "Token Number"),
+            TokenType::TokenPlus => write!(f, "Token Plus"),
             _ => todo!(),
         }
     }
@@ -95,13 +97,21 @@ impl<'s> Scanner<'s> {
 
     // Tokenize the source string and return a Token Vector
     pub fn scan_tokens(&mut self) -> &Vec<Token> {
+        self.current = 0;
+
         // Tokenize the source string
         while !self.is_at_end() {
             self.start = self.current;
 
             self.scan_token();
-            println!("Added token");
         }
+
+        // Append the 'End Of Line' Token
+        self.tokens.push(Token {
+            _type: TokenType::TokenEOF,
+            source_str: "EOF".to_string(),
+            line: self.line,
+        });
 
         return &self.tokens;
     }
@@ -110,15 +120,7 @@ impl<'s> Scanner<'s> {
     fn scan_token(&mut self) -> () {
         self.skip_whitespace();
 
-        if self.is_at_end() {
-            // Append the 'End Of Line' Token
-            self.tokens.push(Token {
-                _type: TokenType::TokenEOF,
-                source_str: "EOF".to_string(),
-                line: self.line,
-            });
-            return;
-        }
+        println!("current: {}", self.current);
 
         match self.advance() {
             '(' => self
@@ -190,16 +192,6 @@ impl<'s> Scanner<'s> {
 
                 self.tokens.push(Token::new(res, self));
             }
-            '/' => {
-                // Check if its a two character token
-                if self.peek_next() == '/' {
-                    while self.peek() != '\n' && !self.is_at_end() {
-                        self.advance();
-                    }
-                } else {
-                    self.tokens.push(Token::new(TokenType::TokenSlash, self));
-                }
-            }
             '"' => {
                 // String literal
                 let res = self.lex_string();
@@ -207,7 +199,7 @@ impl<'s> Scanner<'s> {
             }
             c => {
                 if c.is_numeric() {
-                    self.lex_number(c);
+                    self.lex_number();
                     return;
                 } else if c.is_alphabetic() {
                     self.lex_identifier();
@@ -218,8 +210,6 @@ impl<'s> Scanner<'s> {
                     .push(Token::error_token("Unexpected character".to_string(), self));
             }
         }
-
-        Token::error_token("Unexpected character.".to_string(), self);
     }
 
     // Scan for identifier or keyword and add its type to the Token Vector
@@ -257,8 +247,8 @@ impl<'s> Scanner<'s> {
     }
 
     // Scan number and add its type to the Token Vector
-    fn lex_number(&mut self, current_char: char) -> Token {
-        while current_char.is_numeric() {
+    fn lex_number(&mut self) -> () {
+        while self.peek().is_numeric() && !self.is_at_end() {
             self.advance();
         }
 
@@ -271,7 +261,7 @@ impl<'s> Scanner<'s> {
                 self.advance();
             }
         }
-        return Token::new(TokenType::TokenNumber, self);
+        self.tokens.push(Token::new(TokenType::TokenNumber, self));
     }
 
     // Scan string and add its type to the Token Vector
@@ -297,13 +287,11 @@ impl<'s> Scanner<'s> {
             return '\0';
         }
 
-        return self.source.chars().nth(self.current).unwrap_or_else(|| {
-            panic!(
-                "Error in peek(). No character at index {}. Last character was {}",
-                self.current,
-                self.source.chars().nth(self.current - 1).unwrap()
-            )
-        });
+        return self
+            .source
+            .chars()
+            .nth(self.current)
+            .unwrap_or_else(|| panic!("Error in peek(). No character at index {}", self.current));
     }
 
     // Get next character. Get \0 if the next character is at the end
@@ -357,7 +345,7 @@ impl<'s> Scanner<'s> {
 
     // Check if scanner reached the end of source string
     fn is_at_end(&self) -> bool {
-        return self.current <= self.source.len();
+        return self.current == self.source.len();
     }
 
     // Get current char and continue to next character

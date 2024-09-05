@@ -169,6 +169,12 @@ impl<'c> Compiler<'c> {
     pub fn compile(&mut self) -> bool {
         self.had_error = false;
         self.panic_mode = false;
+        self.current = 1;
+
+        println!(
+            "Current token is: {}",
+            self.tokens[self.current - 1].source_str
+        );
 
         self.advance();
         self.expression();
@@ -183,12 +189,17 @@ impl<'c> Compiler<'c> {
     }
 
     fn advance(&mut self) -> () {
-        for token in self.tokens {
-            if token._type == TokenType::TokenError {
-                // Error encountered, throw compiler error
-                self.error_at_current(&token.source_str);
+        if self.current >= self.tokens.len() {
+            return;
+        }
+
+        loop {
+            self.current += 1;
+            if self.tokens[self.current]._type == TokenType::TokenError {
+                break;
             }
-            break;
+
+            self.error_at_current(&self.tokens[self.current].source_str);
         }
     }
 

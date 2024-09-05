@@ -17,6 +17,7 @@ use chunk::Chunk;
 use vm::VM;
 
 fn main() {
+    env::set_var("RUST_BACKTRACE", "1");
     let args: Vec<String> = env::args().collect();
 
     if args.len() == 1 {
