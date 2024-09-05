@@ -77,11 +77,11 @@ pub struct Token {
 
 // Scanner is used to tokenize the source string
 pub struct Scanner<'s> {
-    pub source: &'s str,
-    pub tokens: Vec<Token>,
-    pub start: usize,
-    pub current: usize,
-    pub line: usize,
+    source: &'s str,    // Source string to be scanned
+    tokens: Vec<Token>, // Vector holding generated tokens
+    start: usize,       // Start of current lexeme
+    current: usize,     // Index of current character
+    line: usize,        // Current line in source string
 }
 
 impl<'s> Scanner<'s> {
@@ -98,9 +98,8 @@ impl<'s> Scanner<'s> {
 
     // Tokenize the source string and return a Token Vector
     pub fn scan_tokens(&mut self) -> &Vec<Token> {
-        self.current = 0;
-
         // Tokenize the source string
+        // and add each token to the token vector
         while !self.is_at_end() {
             self.scan_token();
         }
@@ -117,7 +116,9 @@ impl<'s> Scanner<'s> {
 
     // Scan each character and add the tokens to the Token vector
     fn scan_token(&mut self) -> () {
+        // Remove all white space
         self.skip_whitespace();
+        // Set start of current lexeme
         self.start = self.current;
 
         match self.advance() {
@@ -212,12 +213,16 @@ impl<'s> Scanner<'s> {
 
     // Scan for identifier or keyword and add its type to the Token Vector
     fn lex_identifier(&mut self) -> () {
+        // Consume all alphanumeric characters
         while self.peek().is_alphabetic() || self.peek().is_numeric() {
             self.advance();
         }
 
+        // Create current lexeme
         let value: &str = self.source[self.start..self.current].into();
 
+        // Check if the token is an identifier
+        // or a keyword and add it to the vector
         self.tokens
             .push(Token::new(self.match_keyword(value), self));
     }
@@ -246,6 +251,7 @@ impl<'s> Scanner<'s> {
 
     // Scan number and add its type to the Token Vector
     fn lex_number(&mut self) -> () {
+        // Consume all numeric characters
         while self.peek().is_numeric() && !self.is_at_end() {
             self.advance();
         }
@@ -255,6 +261,7 @@ impl<'s> Scanner<'s> {
             // Consume .
             self.advance();
 
+            // Consume all numeric fractional characters
             while self.peek().is_numeric() {
                 self.advance();
             }
@@ -264,6 +271,7 @@ impl<'s> Scanner<'s> {
 
     // Scan string and add its type to the Token Vector
     fn lex_string(&mut self) -> Token {
+        // Consume all characters until the end of the string(")
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
                 self.line += 1;
@@ -271,6 +279,8 @@ impl<'s> Scanner<'s> {
             self.advance();
         }
 
+        // Check if the source string
+        // ended before the string was terminated
         if self.is_at_end() {
             return Token::error_token("Unterminated string".to_string(), self);
         }
@@ -311,6 +321,7 @@ impl<'s> Scanner<'s> {
             });
     }
 
+    // Remove all whitespace/comments characters from source string
     fn skip_whitespace(&mut self) -> () {
         while !self.is_at_end() {
             match self.peek() {
