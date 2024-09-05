@@ -47,47 +47,110 @@ impl VM {
                 }
                 OpCode::OpNegate => {
                     // Get first value from stack
+                    // Check if its a number
                     // negate it by 1
                     // Push it back onto the stack
-                    let mut value = self.pop();
-                    value.value = value.value - 1.0;
-                    self.push(value);
+                    let mut value = match self.pop() {
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number.");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+
+                    value = value - 1.0;
+                    self.push(Value::Number(value));
                 }
                 OpCode::OpAdd => {
                     // Get first 2 values from stack
-                    // add them together
                     // Push them back onto the stack
-                    let value_a = self.pop();
-                    let value_b = self.pop();
-                    let add = value_a.value + value_b.value;
-                    self.push(Value { value: add });
+                    let value_a = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let value_b = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let add = value_a + value_b;
+                    self.push(Value::Number(add));
                 }
                 OpCode::OpSubtract => {
                     // Get first 2 values from stack
                     // substract them
                     // Push them back onto the stack
-                    let value_a = self.pop();
-                    let value_b = self.pop();
-                    let sub = value_b.value - value_a.value;
-                    self.push(Value { value: sub });
+                    let value_a = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let value_b = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let sub = value_a - value_b;
+                    self.push(Value::Number(sub));
                 }
                 OpCode::OpMultiply => {
                     // Get first 2 values from stack
                     // multiply them
                     // Push them back onto the stack
-                    let value_a = self.pop();
-                    let value_b = self.pop();
-                    let mult = value_a.value * value_b.value;
-                    self.push(Value { value: mult });
+                    let value_a = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let value_b = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let mult = value_a * value_b;
+                    self.push(Value::Number(mult));
                 }
                 OpCode::OpDivide => {
                     // Get first 2 values from stack
                     // Devide them
                     // Push them back onto the stack
-                    let value_a = self.pop();
-                    let value_b = self.pop();
-                    let div = value_a.value / value_b.value;
-                    self.push(Value { value: div });
+                    let value_a = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let value_b = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let div = value_a / value_b;
+                    self.push(Value::Number(div));
                 }
             }
             // Continue to next instruction
@@ -130,5 +193,9 @@ impl VM {
     // pop from value stack
     pub fn pop(&mut self) -> Value {
         self.stack.pop().expect("Couldn't Pop from VM stack")
+    }
+
+    fn runtime_error(&self, msg: &str) -> () {
+        println!("{}", msg);
     }
 }

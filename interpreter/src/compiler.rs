@@ -275,7 +275,7 @@ impl<'c> Compiler<'c> {
             Err(_) => 0.0, //TODO proper error handling
         };
 
-        self.emit_constant(Value { value });
+        self.emit_constant(Value::Number(value));
     }
 
     fn make_constant(&mut self, value: Value) -> u8 {

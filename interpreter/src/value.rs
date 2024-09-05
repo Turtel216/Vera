@@ -3,13 +3,17 @@
 // license that can be found in the LICENSE file
 
 #[derive(Copy, Clone)]
-pub struct Value {
-    pub value: f64,
+pub enum Value {
+    Bool(bool),
+    Number(f64),
 }
 
 impl Value {
     pub fn print_value(self) -> () {
-        println!("{}", self.value);
+        match self {
+            Value::Bool(v) => println!("{}", v),
+            Value::Number(v) => println!("{}", v),
+        }
     }
 }
 
