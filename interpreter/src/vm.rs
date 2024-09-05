@@ -47,7 +47,9 @@ impl VM {
                 }
                 Some(OpCode::OpAdd) => {
                     let value_a = self.pop();
+                    println!("Value a: {}", value_a.value);
                     let value_b = self.pop();
+                    println!("Value b: {}", value_b.value);
                     let add = value_a.value + value_b.value;
                     self.push(Value { value: add });
                 }
@@ -82,10 +84,6 @@ impl VM {
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens();
 
-        for token in tokens {
-            println!("Tokens: {}", token._type);
-        }
-
         let mut parser = Compiler::new(tokens, &mut chunk);
 
         // Compile source string
@@ -99,10 +97,6 @@ impl VM {
         // Init vm
         self.chunk = chunk;
         self.ip = self.chunk.code.clone();
-
-        for code in self.ip.clone() {
-            println!("Code: {}", code);
-        }
 
         // Run instructions
         let result = self.run();

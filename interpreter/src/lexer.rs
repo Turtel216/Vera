@@ -102,8 +102,6 @@ impl<'s> Scanner<'s> {
 
         // Tokenize the source string
         while !self.is_at_end() {
-            self.start = self.current;
-
             self.scan_token();
         }
 
@@ -120,6 +118,7 @@ impl<'s> Scanner<'s> {
     // Scan each character and add the tokens to the Token vector
     fn scan_token(&mut self) -> () {
         self.skip_whitespace();
+        self.start = self.current;
 
         match self.advance() {
             '(' => self
@@ -358,9 +357,11 @@ impl<'s> Scanner<'s> {
 impl Token {
     // Create a new Token
     pub fn new(_type: TokenType, scanner: &Scanner) -> Token {
+        let lexeme = &scanner.source[scanner.start..scanner.current];
+
         Token {
             _type,
-            source_str: scanner.source.to_string(),
+            source_str: lexeme.to_string(),
             line: scanner.line,
         }
     }
