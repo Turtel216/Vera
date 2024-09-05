@@ -192,10 +192,6 @@ impl<'c> Compiler<'c> {
         self.error_at_current(&self.tokens[self.current].source_str);
     }
 
-    fn is_at_end(&self) -> bool {
-        return self.current == self.tokens.len();
-    }
-
     fn expression(&mut self) -> () {
         self.parse_precedence(Precedence::PrecAssignment);
     }
