@@ -42,6 +42,7 @@ fn repl() -> () {
         chunk: Chunk::new(),
         ip: Vec::new(),
         stack: Vec::new(),
+        current: 0,
     };
 
     loop {
@@ -76,6 +77,7 @@ fn run_file(_path: &String) -> std::io::Result<()> {
         chunk: Chunk::new(),
         ip: Vec::new(),
         stack: Vec::new(),
+        current: 0,
     };
 
     // Interpret each line

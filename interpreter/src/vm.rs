@@ -17,6 +17,7 @@ pub struct VM {
     pub chunk: Chunk,      // Byte code chunk
     pub ip: Vec<OpCode>,   // VM instructions
     pub stack: Vec<Value>, // VM value stack
+    pub current: usize,    // Index of current instruction
 }
 
 use crate::lexer::Scanner;
@@ -31,47 +32,47 @@ impl VM {
     fn run(&mut self) -> InterpretResult {
         loop {
             // Execute next instruction
-            match self.ip.pop() {
-                Some(OpCode::OpReturn) => {
+            match self.ip[self.current] {
+                OpCode::OpReturn => {
                     Value::print_value(self.pop());
                     return InterpretResult::InterpretOk;
                 }
-                Some(OpCode::OpConstant(index)) => {
+                OpCode::OpConstant(index) => {
                     let value = self.chunk.read_constant(index);
                     self.push(value);
                 }
-                Some(OpCode::OpNegate) => {
+                OpCode::OpNegate => {
                     let mut value = self.pop();
                     value.value = value.value - 1.0;
                     self.push(value);
                 }
-                Some(OpCode::OpAdd) => {
+                OpCode::OpAdd => {
                     let value_a = self.pop();
                     let value_b = self.pop();
                     let add = value_a.value + value_b.value;
                     self.push(Value { value: add });
                 }
-                Some(OpCode::OpSubtract) => {
+                OpCode::OpSubtract => {
                     let value_a = self.pop();
                     let value_b = self.pop();
                     let sub = value_b.value - value_a.value;
                     self.push(Value { value: sub });
                 }
-                Some(OpCode::OpMultiply) => {
+                OpCode::OpMultiply => {
                     let value_a = self.pop();
                     let value_b = self.pop();
                     let mult = value_a.value * value_b.value;
                     self.push(Value { value: mult });
                 }
-                Some(OpCode::OpDivide) => {
+                OpCode::OpDivide => {
                     let value_a = self.pop();
                     let value_b = self.pop();
                     let div = value_a.value / value_b.value;
                     self.push(Value { value: div });
                 }
-                Some(_) => todo!(),
-                None => return InterpretResult::InterpretRuneTimeError,
+                _ => return InterpretResult::InterpretRuneTimeError,
             }
+            self.current += 1;
         }
     }
     // Interpret a chunk of bytecode
@@ -89,8 +90,6 @@ impl VM {
             chunk.free_chunk();
             return InterpretResult::InterpretCompileError;
         }
-
-        chunk.code.reverse();
 
         // Init vm
         self.chunk = chunk;
