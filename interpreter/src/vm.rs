@@ -47,16 +47,14 @@ impl VM {
                 }
                 Some(OpCode::OpAdd) => {
                     let value_a = self.pop();
-                    println!("Value a: {}", value_a.value);
                     let value_b = self.pop();
-                    println!("Value b: {}", value_b.value);
                     let add = value_a.value + value_b.value;
                     self.push(Value { value: add });
                 }
                 Some(OpCode::OpSubtract) => {
                     let value_a = self.pop();
                     let value_b = self.pop();
-                    let sub = value_a.value - value_b.value;
+                    let sub = value_b.value - value_a.value;
                     self.push(Value { value: sub });
                 }
                 Some(OpCode::OpMultiply) => {

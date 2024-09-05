@@ -274,10 +274,6 @@ impl<'c> Compiler<'c> {
     }
 
     fn parse_number(&mut self) -> () {
-        println!(
-            "Source string is {}",
-            self.tokens[self.current - 1].source_str
-        );
         let value = match self.tokens[self.current - 1].source_str.parse() {
             Ok(v) => v,
             Err(_) => 0.0, //TODO proper error handling
