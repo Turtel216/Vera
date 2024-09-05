@@ -84,12 +84,9 @@ impl VM {
     pub fn interpret(&mut self, source: &String) -> InterpretResult {
         // Compile source file
         let mut chunk = Chunk::new();
+
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens();
-
-        for token in tokens {
-            println!("Token type is: {}", token._type);
-        }
 
         let mut parser = Compiler::new(tokens, &mut chunk);
 

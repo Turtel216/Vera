@@ -48,8 +48,8 @@ type ParseFn<'sourcecode> = fn(&mut Compiler<'sourcecode>) -> ();
 #[derive(Copy, Clone)]
 struct ParseRule<'p> {
     precedence: Precedence,
-    prefix: Option<ParseFn<'p>>,
     infix: Option<ParseFn<'p>>,
+    prefix: Option<ParseFn<'p>>,
 }
 
 impl<'p> ParseRule<'p> {
@@ -78,7 +78,7 @@ pub struct Compiler<'c> {
 impl<'c> Compiler<'c> {
     pub fn new(tokens: &'c Vec<Token>, chunk: &'c mut Chunk) -> Self {
         let mut rules = HashMap::new();
-        let mut rule = |kind, prefix, infix, precedence| {
+        let mut rule = |kind, infix, prefix, precedence| {
             rules.insert(kind, ParseRule::new(prefix, infix, precedence));
         };
 
@@ -135,8 +135,8 @@ impl<'c> Compiler<'c> {
         rule(TokenType::TokenString, None, None, Precedence::PrecNone);
         rule(
             TokenType::TokenNumber,
-            Some(Compiler::parse_number),
             None,
+            Some(Compiler::parse_number),
             Precedence::PrecNone,
         );
         rule(TokenType::TokenAnd, None, None, Precedence::PrecNone);
@@ -169,12 +169,7 @@ impl<'c> Compiler<'c> {
     pub fn compile(&mut self) -> bool {
         self.had_error = false;
         self.panic_mode = false;
-        self.current = 1;
-
-        println!(
-            "Current token is: {}",
-            self.tokens[self.current - 1].source_str
-        );
+        self.current = 0;
 
         self.advance();
         self.expression();
@@ -189,18 +184,20 @@ impl<'c> Compiler<'c> {
     }
 
     fn advance(&mut self) -> () {
-        if self.current >= self.tokens.len() {
+        self.current += 1;
+
+        if self.is_at_end() {
+            return;
+        }
+        if self.tokens[self.current]._type != TokenType::TokenError {
             return;
         }
 
-        loop {
-            self.current += 1;
-            if self.tokens[self.current]._type == TokenType::TokenError {
-                break;
-            }
+        self.error_at_current(&self.tokens[self.current].source_str);
+    }
 
-            self.error_at_current(&self.tokens[self.current].source_str);
-        }
+    fn is_at_end(&self) -> bool {
+        return self.current == self.tokens.len();
     }
 
     fn expression(&mut self) -> () {

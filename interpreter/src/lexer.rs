@@ -120,8 +120,6 @@ impl<'s> Scanner<'s> {
     fn scan_token(&mut self) -> () {
         self.skip_whitespace();
 
-        println!("current: {}", self.current);
-
         match self.advance() {
             '(' => self
                 .tokens
