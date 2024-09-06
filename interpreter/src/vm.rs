@@ -279,6 +279,7 @@ impl VM {
         // Init vm
         self.chunk = chunk;
         self.ip = self.chunk.code.clone();
+        self.current = 0;
 
         // Run instructions
         let result = self.run();
