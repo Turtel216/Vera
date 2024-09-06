@@ -210,7 +210,12 @@ impl<'c> Compiler<'c> {
         rule(TokenType::TokenAnd, None, None, Precedence::PrecNone);
         rule(TokenType::TokenClass, None, None, Precedence::PrecNone);
         rule(TokenType::TokenElse, None, None, Precedence::PrecNone);
-        rule(TokenType::TokenFalse, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenFalse,
+            Some(Compiler::literal),
+            None,
+            Precedence::PrecNone,
+        );
         rule(TokenType::TokenFor, None, None, Precedence::PrecNone);
         rule(TokenType::TokenFor, None, None, Precedence::PrecNone);
         rule(TokenType::TokenFun, None, None, Precedence::PrecNone);

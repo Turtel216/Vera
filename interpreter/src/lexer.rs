@@ -71,6 +71,9 @@ impl fmt::Display for TokenType {
             TokenType::TokenPlusPlus => write!(f, "Token Plus Plus"),
             TokenType::TokenPow => write!(f, "Token Pow"),
             TokenType::TokenBang => write!(f, "Token Bang"),
+            TokenType::TokenTrue => write!(f, "Token True"),
+            TokenType::TokenFalse => write!(f, "Token False"),
+            TokenType::TokenNil => write!(f, "Token Nil"),
             _ => todo!(),
         }
     }
