@@ -82,6 +82,8 @@ impl<'c> Compiler<'c> {
             rules.insert(kind, ParseRule::new(prefix, infix, precedence));
         };
 
+        //TODO add TokenMinusMinus and TokenPlusPlus
+
         rule(
             TokenType::TokenLeftParen,
             Some(Compiler::grouping),
@@ -101,6 +103,24 @@ impl<'c> Compiler<'c> {
         );
         rule(
             TokenType::TokenPlus,
+            None,
+            Some(Compiler::binary),
+            Precedence::PrecTerm,
+        );
+        rule(
+            TokenType::TokenPow,
+            None,
+            Some(Compiler::binary),
+            Precedence::PrecTerm,
+        );
+        rule(
+            TokenType::TokenShiftLeft,
+            None,
+            Some(Compiler::binary),
+            Precedence::PrecTerm,
+        );
+        rule(
+            TokenType::TokenShiftRigth,
             None,
             Some(Compiler::binary),
             Precedence::PrecTerm,
@@ -233,6 +253,9 @@ impl<'c> Compiler<'c> {
             TokenType::TokenMinus => self.emit_byte(OpCode::OpSubtract),
             TokenType::TokenStar => self.emit_byte(OpCode::OpMultiply),
             TokenType::TokenSlash => self.emit_byte(OpCode::OpDivide),
+            TokenType::TokenPow => self.emit_byte(OpCode::OpPow),
+            TokenType::TokenShiftLeft => self.emit_byte(OpCode::OpLeftShift),
+            TokenType::TokenShiftRigth => self.emit_byte(OpCode::OpRightShift),
             _ => return,
         }
     }

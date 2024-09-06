@@ -21,6 +21,7 @@ pub enum TokenType {
     TokenSemicolon,
     TokenSlash,
     TokenStar,
+    TokenPow,
     // One or two character tokens.
     TokenBang,
     TokenBangEqual,
@@ -31,6 +32,9 @@ pub enum TokenType {
     TokenLess,
     TokenLessEqual,
     TokenPlusPlus,
+    TokenMinusMinus,
+    TokenShiftRigth,
+    TokenShiftLeft,
     // Literals.
     TokenIdentifier,
     TokenString,
@@ -63,7 +67,9 @@ impl fmt::Display for TokenType {
             TokenType::TokenIdentifier => write!(f, "Token IDENTIFIER"),
             TokenType::TokenNumber => write!(f, "Token Number"),
             TokenType::TokenPlus => write!(f, "Token Plus"),
-            TokenType::TokenMinus => write!(f, "Token Minus"),
+            TokenType::TokenMinusMinus => write!(f, "Token Minus Minus"),
+            TokenType::TokenPlusPlus => write!(f, "Token Plus Plus"),
+            TokenType::TokenPow => write!(f, "Token Pow"),
             _ => todo!(),
         }
     }
@@ -138,7 +144,17 @@ impl<'s> Scanner<'s> {
                 .tokens
                 .push(Token::new(TokenType::TokenSemicolon, self)),
             '.' => self.tokens.push(Token::new(TokenType::TokenDot, self)),
-            '-' => self.tokens.push(Token::new(TokenType::TokenMinus, self)),
+            '^' => self.tokens.push(Token::new(TokenType::TokenPow, self)),
+            '-' => {
+                // Check if its a two character token
+                let res = if self.match_next('-') {
+                    TokenType::TokenMinusMinus
+                } else {
+                    TokenType::TokenPlus
+                };
+
+                self.tokens.push(Token::new(res, self));
+            }
             '*' => self.tokens.push(Token::new(TokenType::TokenStar, self)),
             ',' => self.tokens.push(Token::new(TokenType::TokenComma, self)),
             '+' => {
@@ -175,6 +191,8 @@ impl<'s> Scanner<'s> {
                 // Check if its a two character token
                 let res = if self.match_next('=') {
                     TokenType::TokenLessEqual
+                } else if self.match_next('<') {
+                    TokenType::TokenShiftLeft
                 } else {
                     TokenType::TokenLess
                 };
@@ -185,6 +203,8 @@ impl<'s> Scanner<'s> {
                 // Check if its a two character token
                 let res = if self.match_next('=') {
                     TokenType::TokenGreaterEqual
+                } else if self.match_next('>') {
+                    TokenType::TokenShiftRigth
                 } else {
                     TokenType::TokenGreater
                 };

@@ -13,6 +13,11 @@ pub enum OpCode {
     OpSubtract,
     OpMultiply,
     OpDivide,
+    OpPow,
+    OpIncrement,
+    OpDecrement,
+    OpLeftShift,
+    OpRightShift,
 }
 
 use std::fmt;
@@ -27,6 +32,11 @@ impl fmt::Display for OpCode {
             OpCode::OpMultiply => write!(f, "OpMultiply"),
             OpCode::OpDivide => write!(f, "OpDivide"),
             OpCode::OpNegate => write!(f, "OpNegate"),
+            OpCode::OpPow => write!(f, "OpPow"),
+            OpCode::OpIncrement => write!(f, "OpIncrement"),
+            OpCode::OpDecrement => write!(f, "OpDecrement"),
+            OpCode::OpRightShift => write!(f, "OpRightShift"),
+            OpCode::OpLeftShift => write!(f, "OpLeftShift"),
         }
     }
 }

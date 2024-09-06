@@ -58,7 +58,39 @@ impl VM {
                         }
                     };
 
+                    value = -value;
+                    self.push(Value::Number(value));
+                }
+                OpCode::OpDecrement => {
+                    // Get first value from stack
+                    // Check if its a number
+                    // decrement it by 1
+                    // Push it back onto the stack
+                    let mut value = match self.pop() {
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number.");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+
                     value = value - 1.0;
+                    self.push(Value::Number(value));
+                }
+                OpCode::OpIncrement => {
+                    // Get first value from stack
+                    // Check if its a number
+                    // increment it by 1
+                    // Push it back onto the stack
+                    let mut value = match self.pop() {
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number.");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+
+                    value = value + 1.0;
                     self.push(Value::Number(value));
                 }
                 OpCode::OpAdd => {
@@ -151,6 +183,75 @@ impl VM {
                     };
                     let div = value_a / value_b;
                     self.push(Value::Number(div));
+                }
+                OpCode::OpLeftShift => {
+                    // Get first 2 values from stack
+                    // bit shift them
+                    // Push them back onto the stack
+                    let value_a = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let value_b = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let shift = (value_a as isize) << (value_b as isize);
+                    self.push(Value::Number(shift as f64));
+                }
+                OpCode::OpRightShift => {
+                    // Get first 2 values from stack
+                    // bit shift them
+                    // Push them back onto the stack
+                    let value_a = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let value_b = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let shift = (value_a as isize) >> (value_b as isize);
+                    self.push(Value::Number(shift as f64));
+                }
+                OpCode::OpPow => {
+                    // Get first 2 values from stack
+                    // calculate the one to the power of the other
+                    // Push them back onto the stack
+                    let value_a = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let value_b = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let pow = value_a.powf(value_b);
+                    self.push(Value::Number(pow));
                 }
             }
             // Continue to next instruction

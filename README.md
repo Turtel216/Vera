@@ -111,6 +111,9 @@ time(pink i = 0; i < 10; i++) {
  |   -      |  Minus    | a - b  |
  |   *      | Multiply  | a * b  |
  |   /      |  Divide    | a / b  |
+ |   ^      |  POWER    | a ^ b  |
+ |   ++      |  increment    | a++  |
+ |   -      |  decrement    | a--  |
 
 #### Relational Operators
 
@@ -130,6 +133,13 @@ time(pink i = 0; i < 10; i++) {
  |   and      |  Logical AND     | a and b  |
  |   or      |  Logical OR   |  a or b |
  |   !      | Logical NOT |  !a  |
+
+#### Logical Operators
+
+ | Symbol  |  Operator  | Syntax |
+ | :---:   |   :---:    | :---:  |
+ |   <<      |  Left bit shift     | a << b  |
+ |   >>      |  Right bit shift     | a >> b  |
 
 #### Assignment Operators
 
