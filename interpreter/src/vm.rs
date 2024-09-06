@@ -257,6 +257,21 @@ impl VM {
                 OpCode::OpTrue => self.push(Value::Bool(true)),
                 OpCode::OpFalse => self.push(Value::Bool(false)),
                 OpCode::OpNil => self.push(Value::Nil),
+                OpCode::OpNot => {
+                    // Get latest value and return the
+                    // oposite bool value or nil
+                    let val = match self.pop() {
+                        Value::Nil => Value::Nil,
+                        Value::Bool(true) => Value::Bool(false),
+                        Value::Bool(false) => Value::Bool(true),
+                        _ => {
+                            self.runtime_error("Operand must be either a bool or nil");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    // Push the value onto the stack
+                    self.push(val);
+                }
             }
             // Continue to next instruction
             self.current += 1;

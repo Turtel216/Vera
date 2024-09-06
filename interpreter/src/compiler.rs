@@ -138,7 +138,12 @@ impl<'c> Compiler<'c> {
             Some(Compiler::binary),
             Precedence::PrecFactor,
         );
-        rule(TokenType::TokenBang, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenBang,
+            Some(Compiler::unary),
+            None,
+            Precedence::PrecNone,
+        );
         rule(TokenType::TokenBangEqual, None, None, Precedence::PrecNone);
         rule(TokenType::TokenEqual, None, None, Precedence::PrecNone);
         rule(TokenType::TokenEqualEqual, None, None, Precedence::PrecNone);
@@ -257,6 +262,7 @@ impl<'c> Compiler<'c> {
         // Emit le operator instuction
         match operator_type {
             TokenType::TokenMinus => self.emit_byte(OpCode::OpNegate),
+            TokenType::TokenBang => self.emit_byte(OpCode::OpNot),
             _ => return,
         }
     }

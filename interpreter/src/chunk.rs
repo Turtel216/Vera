@@ -21,6 +21,7 @@ pub enum OpCode {
     OpDecrement,
     OpLeftShift,
     OpRightShift,
+    OpNot,
 }
 
 use std::fmt;
@@ -43,6 +44,7 @@ impl fmt::Display for OpCode {
             OpCode::OpTrue => write!(f, "OpTrue"),
             OpCode::OpFalse => write!(f, "OpFalse"),
             OpCode::OpNil => write!(f, "OpNil"),
+            OpCode::OpNot => write!(f, "OpNot"),
         }
     }
 }
