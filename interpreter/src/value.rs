@@ -6,6 +6,7 @@
 pub enum Value {
     Bool(bool),
     Number(f64),
+    Nil,
 }
 
 impl Value {
@@ -13,6 +14,7 @@ impl Value {
         match self {
             Value::Bool(v) => println!("{}", v),
             Value::Number(v) => println!("{}", v),
+            Value::Nil => println!("Nil"),
         }
     }
 }

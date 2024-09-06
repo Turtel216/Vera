@@ -253,6 +253,10 @@ impl VM {
                     let pow = value_a.powf(value_b);
                     self.push(Value::Number(pow));
                 }
+                // Push true/false/nil values onto the stack
+                OpCode::OpTrue => self.push(Value::Bool(true)),
+                OpCode::OpFalse => self.push(Value::Bool(false)),
+                OpCode::OpNil => self.push(Value::Nil),
             }
             // Continue to next instruction
             self.current += 1;

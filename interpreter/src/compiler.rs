@@ -159,6 +159,24 @@ impl<'c> Compiler<'c> {
             None,
             Precedence::PrecNone,
         );
+        rule(
+            TokenType::TokenTrue,
+            Some(Compiler::literal),
+            None,
+            Precedence::PrecNone,
+        );
+        rule(
+            TokenType::TokenFalse,
+            Some(Compiler::literal),
+            None,
+            Precedence::PrecNone,
+        );
+        rule(
+            TokenType::TokenNil,
+            Some(Compiler::literal),
+            None,
+            Precedence::PrecNone,
+        );
         rule(TokenType::TokenAnd, None, None, Precedence::PrecNone);
         rule(TokenType::TokenClass, None, None, Precedence::PrecNone);
         rule(TokenType::TokenElse, None, None, Precedence::PrecNone);
@@ -258,6 +276,15 @@ impl<'c> Compiler<'c> {
             TokenType::TokenShiftRigth => self.emit_byte(OpCode::OpRightShift),
             _ => return,
         }
+    }
+
+    fn literal(&mut self) -> () {
+        match self.tokens[self.current - 1]._type {
+            TokenType::TokenFalse => self.emit_byte(OpCode::OpFalse),
+            TokenType::TokenTrue => self.emit_byte(OpCode::OpTrue),
+            TokenType::TokenNil => self.emit_byte(OpCode::OpNil),
+            _ => return,
+        };
     }
 
     fn parse_precedence(&mut self, precedence: Precedence) -> () {

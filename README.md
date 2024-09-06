@@ -25,7 +25,7 @@ Variables in Vera are declared using the **pink** keyword.
 pink x = 5;
 ```
 
-Variables can also take the null. The root of all evil, null, in xanadu is called **money**
+Variables can also take the null value. The root of all evil, null, in xanadu is called **money**
 
 ```ruby 
 pink empty = money;
@@ -80,6 +80,8 @@ else if statements are declared using the **anybody outThere?** keyword
 ```ruby 
 outThere?(1 == 2) {
     shine "Hey you";
+} anybody {
+    shine "??";
 } anybody outThere?(1 == 1) {
     shine "Not you";
 }
@@ -134,7 +136,7 @@ time(pink i = 0; i < 10; i++) {
  |   or      |  Logical OR   |  a or b |
  |   !      | Logical NOT |  !a  |
 
-#### Logical Operators
+#### Bitwise Operators
 
  | Symbol  |  Operator  | Syntax |
  | :---:   |   :---:    | :---:  |

@@ -8,6 +8,9 @@
 pub enum OpCode {
     OpReturn,
     OpConstant(u8),
+    OpNil,
+    OpTrue,
+    OpFalse,
     OpNegate,
     OpAdd,
     OpSubtract,
@@ -37,6 +40,9 @@ impl fmt::Display for OpCode {
             OpCode::OpDecrement => write!(f, "OpDecrement"),
             OpCode::OpRightShift => write!(f, "OpRightShift"),
             OpCode::OpLeftShift => write!(f, "OpLeftShift"),
+            OpCode::OpTrue => write!(f, "OpTrue"),
+            OpCode::OpFalse => write!(f, "OpFalse"),
+            OpCode::OpNil => write!(f, "OpNil"),
         }
     }
 }
