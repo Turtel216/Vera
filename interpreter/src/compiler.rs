@@ -144,18 +144,43 @@ impl<'c> Compiler<'c> {
             None,
             Precedence::PrecNone,
         );
-        rule(TokenType::TokenBangEqual, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenBangEqual,
+            None,
+            Some(Compiler::binary),
+            Precedence::PrecEquality,
+        );
         rule(TokenType::TokenEqual, None, None, Precedence::PrecNone);
-        rule(TokenType::TokenEqualEqual, None, None, Precedence::PrecNone);
-        rule(TokenType::TokenGreater, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenEqualEqual,
+            None,
+            Some(Compiler::binary),
+            Precedence::PrecEquality,
+        );
+        rule(
+            TokenType::TokenGreater,
+            None,
+            Some(Compiler::binary),
+            Precedence::PrecComparsion,
+        );
         rule(
             TokenType::TokenGreaterEqual,
             None,
-            None,
-            Precedence::PrecNone,
+            Some(Compiler::binary),
+            Precedence::PrecComparsion,
         );
-        rule(TokenType::TokenLess, None, None, Precedence::PrecNone);
-        rule(TokenType::TokenLessEqual, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenLess,
+            None,
+            Some(Compiler::binary),
+            Precedence::PrecComparsion,
+        );
+        rule(
+            TokenType::TokenLessEqual,
+            None,
+            Some(Compiler::binary),
+            Precedence::PrecComparsion,
+        );
         rule(TokenType::TokenIdentifier, None, None, Precedence::PrecNone);
         rule(TokenType::TokenString, None, None, Precedence::PrecNone);
         rule(
@@ -280,6 +305,12 @@ impl<'c> Compiler<'c> {
             TokenType::TokenPow => self.emit_byte(OpCode::OpPow),
             TokenType::TokenShiftLeft => self.emit_byte(OpCode::OpLeftShift),
             TokenType::TokenShiftRigth => self.emit_byte(OpCode::OpRightShift),
+            TokenType::TokenBangEqual => self.emit_bytes(OpCode::OpEqual, OpCode::OpNot),
+            TokenType::TokenEqualEqual => self.emit_byte(OpCode::OpEqual),
+            TokenType::TokenGreater => self.emit_byte(OpCode::OpGreater),
+            TokenType::TokenGreaterEqual => self.emit_bytes(OpCode::OpLess, OpCode::OpNot),
+            TokenType::TokenLess => self.emit_byte(OpCode::OpLess),
+            TokenType::TokenLessEqual => self.emit_bytes(OpCode::OpGreater, OpCode::OpNot),
             _ => return,
         }
     }

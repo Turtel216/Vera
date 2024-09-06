@@ -8,6 +8,8 @@ pub enum InterpretResult {
     InterpretRuneTimeError,
 }
 
+use std::any::Any;
+
 use crate::chunk::Chunk;
 use crate::chunk::OpCode;
 use crate::compiler::Compiler;
@@ -272,6 +274,60 @@ impl VM {
                     // Push the value onto the stack
                     self.push(val);
                 }
+                OpCode::OpEqual => {
+                    // Get first 2 values from stack
+                    // compare them and
+                    // Push the result back onto the stack
+                    let value_a = self.pop();
+                    let value_b = self.pop();
+                    self.push(Value::Bool(self.values_equal(value_a, value_b)))
+                }
+                OpCode::OpGreater => {
+                    // Get first 2 values from stack
+                    // compare them and
+                    // Push the result back onto the stack
+                    let value_a = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let value_b = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let result = value_a > value_b;
+                    self.push(Value::Bool(result));
+                }
+                OpCode::OpLess => {
+                    // Get first 2 values from stack
+                    // compare them and
+                    // Push the result back onto the stack
+                    let value_a = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let value_b = match self.pop() {
+                        // Check for valid types
+                        Value::Number(v) => v,
+                        _ => {
+                            self.runtime_error("Operand must be a number");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    };
+                    let result = value_a < value_b;
+                    self.push(Value::Bool(result));
+                }
             }
             // Continue to next instruction
             self.current += 1;
@@ -314,6 +370,16 @@ impl VM {
     // pop from value stack
     pub fn pop(&mut self) -> Value {
         self.stack.pop().expect("Couldn't Pop from VM stack")
+    }
+
+    // Check if two value types are equal
+    fn values_equal(&self, a: Value, b: Value) -> bool {
+        // Check if the two values have the same type
+        if a.type_id() != b.type_id() {
+            return false;
+        }
+
+        return a == b;
     }
 
     fn runtime_error(&self, msg: &str) -> () {
