@@ -105,6 +105,6 @@ impl<'c> Chunk {
     }
 
     pub fn read_constant(&self, index: u8) -> Value {
-        self.constants.array[index as usize]
+        self.constants.array[index as usize].clone()
     }
 }

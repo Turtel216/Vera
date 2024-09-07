@@ -2,10 +2,13 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file
 
-#[derive(Copy, Clone, PartialEq)]
+use crate::object::ObjString;
+
+#[derive(Clone, PartialEq)]
 pub enum Value {
     Bool(bool),
     Number(f64),
+    Object(ObjString),
     Nil,
 }
 
@@ -15,6 +18,7 @@ impl Value {
             Value::Bool(v) => println!("{}", v),
             Value::Number(v) => println!("{}", v),
             Value::Nil => println!("Nil"),
+            Value::Object(v) => println!("{}", v),
         }
     }
 }

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file
 
+use crate::object::ObjString;
 use std::collections::HashMap;
 
 use crate::{
@@ -182,7 +183,12 @@ impl<'c> Compiler<'c> {
             Precedence::PrecComparsion,
         );
         rule(TokenType::TokenIdentifier, None, None, Precedence::PrecNone);
-        rule(TokenType::TokenString, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenString,
+            Some(Compiler::parse_string),
+            None,
+            Precedence::PrecNone,
+        );
         rule(
             TokenType::TokenNumber,
             Some(Compiler::parse_number),
@@ -327,6 +333,12 @@ impl<'c> Compiler<'c> {
             TokenType::TokenNil => self.emit_byte(OpCode::OpNil),
             _ => return,
         };
+    }
+
+    fn parse_string(&mut self) -> () {
+        self.emit_constant(Value::Object(ObjString {
+            chars: self.tokens[self.current - 1].source_str.clone(),
+        }));
     }
 
     fn parse_precedence(&mut self, precedence: Precedence) -> () {

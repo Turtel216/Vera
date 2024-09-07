@@ -13,6 +13,7 @@ use std::any::Any;
 use crate::chunk::Chunk;
 use crate::chunk::OpCode;
 use crate::compiler::Compiler;
+use crate::object::ObjString;
 
 // Vera stack based Virtual Machine
 pub struct VM {
@@ -96,26 +97,59 @@ impl VM {
                     self.push(Value::Number(value));
                 }
                 OpCode::OpAdd => {
-                    // Get first 2 values from stack
-                    // Push them back onto the stack
-                    let value_a = match self.pop() {
-                        // Check for valid types
-                        Value::Number(v) => v,
-                        _ => {
-                            self.runtime_error("Operand must be a number");
-                            return InterpretResult::InterpretRuneTimeError;
-                        }
-                    };
-                    let value_b = match self.pop() {
-                        // Check for valid types
-                        Value::Number(v) => v,
-                        _ => {
-                            self.runtime_error("Operand must be a number");
-                            return InterpretResult::InterpretRuneTimeError;
-                        }
-                    };
-                    let add = value_a + value_b;
-                    self.push(Value::Number(add));
+                    // Check if the value is a String or a number
+                    if self.stack[0].type_id() == Value::Object.type_id() {
+                        // Get first 2 ObjStrings from stack
+                        // concatenate them
+                        // Push them back onto the stack
+                        let value_a = match self.pop() {
+                            // Check for valid types
+                            Value::Object(v) => v,
+                            _ => {
+                                self.runtime_error("Operand must be a number");
+                                return InterpretResult::InterpretRuneTimeError;
+                            }
+                        };
+                        let value_b = match self.pop() {
+                            // Check for valid types
+                            Value::Object(v) => v,
+                            _ => {
+                                self.runtime_error("Operand must be a number");
+                                return InterpretResult::InterpretRuneTimeError;
+                            }
+                        };
+
+                        let concatenated_str = value_a.chars + &value_b.chars;
+                        let result = ObjString {
+                            chars: concatenated_str,
+                        };
+                        self.push(Value::Object(result));
+                    }
+                    // Check if the value is a String or a number
+                    if self.stack[0].type_id() == Value::Number.type_id() {
+                        // Get first 2 numbers from stack
+                        // add them
+                        // Push them back onto the stack
+                        let value_a = match self.pop() {
+                            // Check for valid types
+                            Value::Number(v) => v,
+                            _ => {
+                                self.runtime_error("Operand must be a number");
+                                return InterpretResult::InterpretRuneTimeError;
+                            }
+                        };
+                        let value_b = match self.pop() {
+                            // Check for valid types
+                            Value::Number(v) => v,
+                            _ => {
+                                self.runtime_error("Operand must be a number");
+                                return InterpretResult::InterpretRuneTimeError;
+                            }
+                        };
+
+                        let add = value_a + value_b;
+                        self.push(Value::Number(add));
+                    }
                 }
                 OpCode::OpSubtract => {
                     // Get first 2 values from stack

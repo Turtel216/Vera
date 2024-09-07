@@ -2,8 +2,6 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file
 
-// Types of language tokens
-
 use std::fmt;
 
 // Types of language tokens
@@ -74,6 +72,7 @@ impl fmt::Display for TokenType {
             TokenType::TokenTrue => write!(f, "Token True"),
             TokenType::TokenFalse => write!(f, "Token False"),
             TokenType::TokenNil => write!(f, "Token Nil"),
+            TokenType::TokenString => write!(f, "Token String"),
             _ => todo!(),
         }
     }
