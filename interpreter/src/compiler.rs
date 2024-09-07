@@ -261,7 +261,15 @@ impl<'c> Compiler<'c> {
     fn statement(&mut self) -> () {
         if self.match_token(TokenType::TokenPrint) {
             self.print_statement();
+        } else {
+            self.expression_statement();
         }
+    }
+
+    fn expression_statement(&mut self) -> () {
+        self.expression();
+        self.consume(TokenType::TokenSemicolon, "Expected ';' after expression");
+        self.emit_byte(OpCode::OpPop);
     }
 
     fn print_statement(&mut self) -> () {

@@ -344,6 +344,7 @@ impl VM {
                     self.push(Value::Bool(result));
                 }
                 OpCode::OpPrint => Value::print_value(self.pop()),
+                OpCode::OpPop => _ = self.pop(),
             }
             // Continue to next instruction
             self.current += 1;
