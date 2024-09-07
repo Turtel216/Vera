@@ -7,7 +7,7 @@
 
 ## Language Overview
 
-Vera is a dynamically typed interpreted procedural programming language. Each statement has to end with a semicolone ( ; ). Vera does not allow global variables or nested procedures
+Vera is a dynamically typed interpreted Object Oriented programming language. Each statement has to end with a semicolone ( ; ). Vera does not allow nested procedures
 
 ### Comments
 
