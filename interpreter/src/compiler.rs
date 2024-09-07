@@ -182,7 +182,12 @@ impl<'c> Compiler<'c> {
             Some(Compiler::binary),
             Precedence::PrecComparsion,
         );
-        rule(TokenType::TokenIdentifier, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenIdentifier,
+            Some(Compiler::variable),
+            None,
+            Precedence::PrecNone,
+        );
         rule(
             TokenType::TokenString,
             Some(Compiler::parse_string),
@@ -255,7 +260,15 @@ impl<'c> Compiler<'c> {
     }
 
     fn declaration(&mut self) -> () {
-        self.statement();
+        if self.match_token(TokenType::TokenVar) {
+            self.var_declaration();
+        } else {
+            self.statement();
+        }
+
+        if self.panic_mode == true {
+            self.synchronize();
+        }
     }
 
     fn statement(&mut self) -> () {
@@ -276,6 +289,57 @@ impl<'c> Compiler<'c> {
         self.expression();
         self.consume(TokenType::TokenSemicolon, "Expected  ';' after value.");
         self.emit_byte(OpCode::OpPrint);
+    }
+
+    fn var_declaration(&mut self) -> () {
+        let global = self.parse_variable("Epxected variable name.");
+
+        if self.match_token(TokenType::TokenEqual) {
+            self.expression();
+        } else {
+            self.emit_byte(OpCode::OpNil);
+        }
+
+        self.consume(TokenType::TokenSemicolon, "Expected ';' after expression");
+
+        self.define_variable(global);
+    }
+
+    fn parse_variable(&mut self, msg: &'c str) -> u8 {
+        self.consume(TokenType::TokenIdentifier, msg);
+        return self.identifier_constant(&self.tokens[self.current - 1]);
+    }
+
+    fn define_variable(&mut self, global: u8) -> () {
+        self.emit_byte(OpCode::OpDefineGlobal(global));
+    }
+
+    fn identifier_constant(&mut self, name: &Token) -> u8 {
+        return self.make_constant(Value::Object(ObjString {
+            chars: name.source_str.clone(),
+        }));
+    }
+
+    fn synchronize(&mut self) -> () {
+        self.panic_mode = false;
+
+        while self.tokens[self.current]._type != TokenType::TokenEOF {
+            if self.tokens[self.current - 1]._type == TokenType::TokenSemicolon {
+                return;
+            }
+
+            match self.tokens[self.current]._type {
+                TokenType::TokenClass => return,
+                TokenType::TokenFun => return,
+                TokenType::TokenVar => return,
+                TokenType::TokenFor => return,
+                TokenType::TokenIf => return,
+                TokenType::TokenWhile => return,
+                TokenType::TokenPrint => return,
+                TokenType::TokenReturn => return,
+                _ => self.advance(),
+            }
+        }
     }
 
     fn end_compiler(&mut self) -> () {
@@ -376,6 +440,15 @@ impl<'c> Compiler<'c> {
         self.emit_constant(Value::Object(ObjString {
             chars: self.tokens[self.current - 1].source_str.clone(),
         }));
+    }
+
+    fn variable(&mut self) -> () {
+        self.named_variable(&self.tokens[self.current - 1]);
+    }
+
+    fn named_variable(&mut self, name: &Token) -> () {
+        let arg = self.identifier_constant(&name);
+        self.emit_byte(OpCode::OpGetGlobal(arg));
     }
 
     fn parse_precedence(&mut self, precedence: Precedence) -> () {

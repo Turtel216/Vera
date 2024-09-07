@@ -8,6 +8,8 @@
 pub enum OpCode {
     OpReturn,
     OpConstant(u8),
+    OpDefineGlobal(u8),
+    OpGetGlobal(u8),
     OpNil,
     OpTrue,
     OpFalse,
@@ -55,6 +57,8 @@ impl fmt::Display for OpCode {
             OpCode::OpLess => write!(f, "OpLess"),
             OpCode::OpPrint => write!(f, "OpPrint"),
             OpCode::OpPop => write!(f, "OpPop"),
+            OpCode::OpDefineGlobal(v) => write!(f, "OpDefineGlobal {}", v),
+            OpCode::OpGetGlobal(v) => write!(f, "OpGetGlobal {}", v),
         }
     }
 }
@@ -110,5 +114,13 @@ impl<'c> Chunk {
 
     pub fn read_constant(&self, index: u8) -> Value {
         self.constants.array[index as usize].clone()
+    }
+
+    pub fn read_string(&self, index: u8) -> String {
+        if let Value::Object(s) = self.read_constant(index) {
+            s.chars
+        } else {
+            panic!("Constant is not String!");
+        }
     }
 }

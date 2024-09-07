@@ -45,7 +45,7 @@ fn repl() -> () {
         ip: Vec::new(),
         stack: Vec::new(),
         current: 0,
-        strings: HashMap::new(),
+        globals: HashMap::new(),
     };
 
     loop {
@@ -81,7 +81,7 @@ fn run_file(_path: &String) -> std::io::Result<()> {
         ip: Vec::new(),
         stack: Vec::new(),
         current: 0,
-        strings: HashMap::new(),
+        globals: HashMap::new(),
     };
 
     // Interpret each line

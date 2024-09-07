@@ -22,7 +22,7 @@ pub struct VM {
     pub ip: Vec<OpCode>,   // VM instructions
     pub stack: Vec<Value>, // VM value stack
     pub current: usize,    // Index of current instruction
-    pub strings: HashMap<String, Value>,
+    pub globals: HashMap<String, Value>,
 }
 
 use crate::lexer::Scanner;
@@ -345,6 +345,22 @@ impl VM {
                 }
                 OpCode::OpPrint => Value::print_value(self.pop()),
                 OpCode::OpPop => _ = self.pop(),
+                OpCode::OpDefineGlobal(i) => {
+                    let global_name = self.chunk.read_string(i);
+                    let value = self.pop();
+                    self.globals.insert(global_name, value);
+                }
+                OpCode::OpGetGlobal(i) => {
+                    let global_name = self.chunk.read_string(i);
+                    match self.globals.get(&global_name) {
+                        Some(value) => self.push(value.clone()),
+                        None => {
+                            let msg = format!("Undefined variable '{}'.", global_name);
+                            self.runtime_error(&msg);
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    }
+                }
             }
             // Continue to next instruction
             self.current += 1;
