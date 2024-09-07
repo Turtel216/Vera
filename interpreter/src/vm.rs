@@ -9,6 +9,7 @@ pub enum InterpretResult {
 }
 
 use std::any::Any;
+use std::fmt::format;
 
 use crate::chunk::Chunk;
 use crate::chunk::OpCode;
@@ -97,58 +98,23 @@ impl VM {
                     self.push(Value::Number(value));
                 }
                 OpCode::OpAdd => {
-                    // Check if the value is a String or a number
-                    if self.stack[0].type_id() == Value::Object.type_id() {
-                        // Get first 2 ObjStrings from stack
-                        // concatenate them
-                        // Push them back onto the stack
-                        let value_a = match self.pop() {
-                            // Check for valid types
-                            Value::Object(v) => v,
-                            _ => {
-                                self.runtime_error("Operand must be a number");
-                                return InterpretResult::InterpretRuneTimeError;
-                            }
-                        };
-                        let value_b = match self.pop() {
-                            // Check for valid types
-                            Value::Object(v) => v,
-                            _ => {
-                                self.runtime_error("Operand must be a number");
-                                return InterpretResult::InterpretRuneTimeError;
-                            }
-                        };
+                    let (a, b) = (self.pop(), self.pop());
+                    match (&a, &b) {
+                        (Value::Number(a), Value::Number(b)) => {
+                            self.push(Value::Number(a + b));
+                        }
 
-                        let concatenated_str = value_a.chars + &value_b.chars;
-                        let result = ObjString {
-                            chars: concatenated_str,
-                        };
-                        self.push(Value::Object(result));
-                    }
-                    // Check if the value is a String or a number
-                    if self.stack[0].type_id() == Value::Number.type_id() {
-                        // Get first 2 numbers from stack
-                        // add them
-                        // Push them back onto the stack
-                        let value_a = match self.pop() {
-                            // Check for valid types
-                            Value::Number(v) => v,
-                            _ => {
-                                self.runtime_error("Operand must be a number");
-                                return InterpretResult::InterpretRuneTimeError;
-                            }
-                        };
-                        let value_b = match self.pop() {
-                            // Check for valid types
-                            Value::Number(v) => v,
-                            _ => {
-                                self.runtime_error("Operand must be a number");
-                                return InterpretResult::InterpretRuneTimeError;
-                            }
-                        };
+                        (Value::Object(a), Value::Object(b)) => {
+                            let result = format!("{}{}", a, b);
+                            self.push(Value::Object(ObjString { chars: result }));
+                        }
 
-                        let add = value_a + value_b;
-                        self.push(Value::Number(add));
+                        _ => {
+                            self.push(a);
+                            self.push(b);
+                            self.runtime_error("Operand must be a number.");
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
                     }
                 }
                 OpCode::OpSubtract => {
