@@ -9,7 +9,7 @@ pub enum InterpretResult {
 }
 
 use std::any::Any;
-use std::fmt::format;
+use std::collections::HashMap;
 
 use crate::chunk::Chunk;
 use crate::chunk::OpCode;
@@ -22,6 +22,7 @@ pub struct VM {
     pub ip: Vec<OpCode>,   // VM instructions
     pub stack: Vec<Value>, // VM value stack
     pub current: usize,    // Index of current instruction
+    pub strings: HashMap<String, Value>,
 }
 
 use crate::lexer::Scanner;
@@ -39,8 +40,6 @@ impl VM {
         loop {
             match self.ip[self.current] {
                 OpCode::OpReturn => {
-                    //TODO
-                    Value::print_value(self.pop());
                     return InterpretResult::InterpretOk;
                 }
                 OpCode::OpConstant(index) => {
@@ -98,21 +97,31 @@ impl VM {
                     self.push(Value::Number(value));
                 }
                 OpCode::OpAdd => {
+                    // Get first two values
                     let (a, b) = (self.pop(), self.pop());
+                    // Pattern match the String and number types while ensuring
+                    // both a and b are the same type
                     match (&a, &b) {
                         (Value::Number(a), Value::Number(b)) => {
                             self.push(Value::Number(a + b));
                         }
 
                         (Value::Object(a), Value::Object(b)) => {
+                            // Concatenate both strings
+                            // and push the result onto the stack
                             let result = format!("{}{}", a, b);
                             self.push(Value::Object(ObjString { chars: result }));
                         }
 
                         _ => {
+                            /* Consider adding the values
+                            back onto the stack again
+                            on failure TODO
+
                             self.push(a);
                             self.push(b);
-                            self.runtime_error("Operand must be a number.");
+                            */
+                            self.runtime_error("Operand must be a Number or String.");
                             return InterpretResult::InterpretRuneTimeError;
                         }
                     }
@@ -187,6 +196,9 @@ impl VM {
                     self.push(Value::Number(div));
                 }
                 OpCode::OpLeftShift => {
+                    //TODO ansure the numbers can be downcast to integer
+                    //without loss of information
+
                     // Get first 2 values from stack
                     // bit shift them
                     // Push them back onto the stack
@@ -210,6 +222,9 @@ impl VM {
                     self.push(Value::Number(shift as f64));
                 }
                 OpCode::OpRightShift => {
+                    //TODO ansure the numbers can be downcast to integer
+                    //without loss of information
+
                     // Get first 2 values from stack
                     // bit shift them
                     // Push them back onto the stack
@@ -328,6 +343,7 @@ impl VM {
                     let result = value_a < value_b;
                     self.push(Value::Bool(result));
                 }
+                OpCode::OpPrint => Value::print_value(self.pop()),
             }
             // Continue to next instruction
             self.current += 1;

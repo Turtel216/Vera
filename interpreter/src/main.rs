@@ -9,6 +9,7 @@ mod object;
 mod value;
 mod vm;
 
+use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
@@ -44,6 +45,7 @@ fn repl() -> () {
         ip: Vec::new(),
         stack: Vec::new(),
         current: 0,
+        strings: HashMap::new(),
     };
 
     loop {
@@ -79,6 +81,7 @@ fn run_file(_path: &String) -> std::io::Result<()> {
         ip: Vec::new(),
         stack: Vec::new(),
         current: 0,
+        strings: HashMap::new(),
     };
 
     // Interpret each line

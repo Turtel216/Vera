@@ -246,11 +246,28 @@ impl<'c> Compiler<'c> {
         };
     }
     pub fn compile(&mut self) -> bool {
-        self.expression();
-        self.consume(TokenType::TokenEOF, "Expected end of expression.");
+        while !self.match_token(TokenType::TokenEOF) {
+            self.declaration();
+        }
 
         self.end_compiler();
         return !self.had_error;
+    }
+
+    fn declaration(&mut self) -> () {
+        self.statement();
+    }
+
+    fn statement(&mut self) -> () {
+        if self.match_token(TokenType::TokenPrint) {
+            self.print_statement();
+        }
+    }
+
+    fn print_statement(&mut self) -> () {
+        self.expression();
+        self.consume(TokenType::TokenSemicolon, "Expected  ';' after value.");
+        self.emit_byte(OpCode::OpPrint);
     }
 
     fn end_compiler(&mut self) -> () {
@@ -269,6 +286,18 @@ impl<'c> Compiler<'c> {
         }
 
         self.error_at_current(&self.tokens[self.current].source_str);
+    }
+
+    fn match_token(&mut self, _type: TokenType) -> bool {
+        if !self.check(_type) {
+            return false;
+        }
+        self.advance();
+        return true;
+    }
+
+    fn check(&self, _type: TokenType) -> bool {
+        return self.tokens[self.current]._type == _type;
     }
 
     fn expression(&mut self) -> () {
