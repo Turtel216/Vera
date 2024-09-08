@@ -294,6 +294,8 @@ impl<'s> Scanner<'s> {
 
     // Scan string and add its type to the Token Vector
     fn lex_string(&mut self) -> Token {
+        // Skip '"'
+        self.start += 1;
         // Consume all characters until the end of the string(")
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
@@ -308,8 +310,9 @@ impl<'s> Scanner<'s> {
             return Token::error_token("Unterminated string".to_string(), self);
         }
 
+        let token = Token::new(TokenType::TokenString, self);
         self.advance();
-        return Token::new(TokenType::TokenString, self);
+        return token;
     }
 
     // Get current character. Get \0 if at the end

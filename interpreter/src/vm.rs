@@ -98,7 +98,7 @@ impl VM {
                 }
                 OpCode::OpAdd => {
                     // Get first two values
-                    let (a, b) = (self.pop(), self.pop());
+                    let (b, a) = (self.pop(), self.pop());
                     // Pattern match the String and number types while ensuring
                     // both a and b are the same type
                     match (&a, &b) {
