@@ -10,6 +10,7 @@ pub enum OpCode {
     OpConstant(u8),
     OpDefineGlobal(u8),
     OpGetGlobal(u8),
+    OpSetGlobal(u8),
     OpNil,
     OpTrue,
     OpFalse,
@@ -59,6 +60,7 @@ impl fmt::Display for OpCode {
             OpCode::OpPop => write!(f, "OpPop"),
             OpCode::OpDefineGlobal(v) => write!(f, "OpDefineGlobal {}", v),
             OpCode::OpGetGlobal(v) => write!(f, "OpGetGlobal {}", v),
+            OpCode::OpSetGlobal(v) => write!(f, "OpSetGlobal {}", v),
         }
     }
 }

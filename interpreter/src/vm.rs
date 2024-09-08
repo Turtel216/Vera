@@ -361,6 +361,17 @@ impl VM {
                         }
                     }
                 }
+                OpCode::OpSetGlobal(i) => {
+                    let global_name = self.chunk.read_string(i);
+                    match self.globals.get(&global_name) {
+                        Some(value) => self.push(value.clone()),
+                        None => {
+                            let msg = format!("Undefined variable '{}'.", global_name);
+                            self.runtime_error(&msg);
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    }
+                }
             }
             // Continue to next instruction
             self.current += 1;

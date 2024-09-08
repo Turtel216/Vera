@@ -44,7 +44,7 @@ impl Precedence {
     }
 }
 
-type ParseFn<'sourcecode> = fn(&mut Compiler<'sourcecode>) -> ();
+type ParseFn<'sourcecode> = fn(&mut Compiler<'sourcecode>, bool) -> ();
 
 #[derive(Copy, Clone)]
 struct ParseRule<'p> {
@@ -385,12 +385,12 @@ impl<'c> Compiler<'c> {
         self.error_at_current(msg);
     }
 
-    fn grouping(&mut self) -> () {
+    fn grouping(&mut self, can_assign: bool) -> () {
         self.expression();
         self.consume(TokenType::TokenRightParen, "Expect ')' after expression.");
     }
 
-    fn unary(&mut self) -> () {
+    fn unary(&mut self, can_assign: bool) -> () {
         let operator_type = self.tokens[self.current - 1]._type;
 
         // Compile the operand
@@ -404,7 +404,7 @@ impl<'c> Compiler<'c> {
         }
     }
 
-    fn binary(&mut self) -> () {
+    fn binary(&mut self, can_assign: bool) -> () {
         let operator_type = self.tokens[self.current - 1]._type;
         let rule = self.get_rule(operator_type);
         self.parse_precedence(rule.precedence.next());
@@ -427,7 +427,7 @@ impl<'c> Compiler<'c> {
         }
     }
 
-    fn literal(&mut self) -> () {
+    fn literal(&mut self, can_assign: bool) -> () {
         match self.tokens[self.current - 1]._type {
             TokenType::TokenFalse => self.emit_byte(OpCode::OpFalse),
             TokenType::TokenTrue => self.emit_byte(OpCode::OpTrue),
@@ -436,19 +436,25 @@ impl<'c> Compiler<'c> {
         };
     }
 
-    fn parse_string(&mut self) -> () {
+    fn parse_string(&mut self, can_assign: bool) -> () {
         self.emit_constant(Value::Object(ObjString {
             chars: self.tokens[self.current - 1].source_str.clone(),
         }));
     }
 
-    fn variable(&mut self) -> () {
-        self.named_variable(&self.tokens[self.current - 1]);
+    fn variable(&mut self, can_assign: bool) -> () {
+        self.named_variable(&self.tokens[self.current - 1], can_assign);
     }
 
-    fn named_variable(&mut self, name: &Token) -> () {
+    fn named_variable(&mut self, name: &Token, can_assign: bool) -> () {
         let arg = self.identifier_constant(&name);
-        self.emit_byte(OpCode::OpGetGlobal(arg));
+
+        if self.match_token(TokenType::TokenEqual) && can_assign {
+            self.expression();
+            self.emit_byte(OpCode::OpSetGlobal(arg));
+        } else {
+            self.emit_byte(OpCode::OpGetGlobal(arg));
+        }
     }
 
     fn parse_precedence(&mut self, precedence: Precedence) -> () {
@@ -462,7 +468,8 @@ impl<'c> Compiler<'c> {
             }
         };
 
-        prefix_rule(self);
+        let can_assign = precedence <= Precedence::PrecAssignment;
+        prefix_rule(self, can_assign);
 
         while self.is_lower_precedence(precedence) {
             self.advance();
@@ -470,7 +477,11 @@ impl<'c> Compiler<'c> {
                 .get_rule(self.tokens[self.current - 1]._type)
                 .infix
                 .unwrap();
-            infix_rule(self);
+            infix_rule(self, can_assign);
+        }
+
+        if can_assign && self.match_token(TokenType::TokenEqual) {
+            self.error("Invalid assignment target.");
         }
     }
 
@@ -483,7 +494,7 @@ impl<'c> Compiler<'c> {
         precedence <= current_precedence
     }
 
-    fn parse_number(&mut self) -> () {
+    fn parse_number(&mut self, can_assign: bool) -> () {
         let value = match self.tokens[self.current - 1].source_str.parse() {
             Ok(v) => v,
             Err(_) => 0.0, //TODO proper error handling
