@@ -44,7 +44,7 @@ impl Precedence {
     }
 }
 
-type ParseFn<'sourcecode> = fn(&mut Compiler<'sourcecode>, bool) -> ();
+type ParseFn<'sourcecode> = fn(&mut Parser<'sourcecode>, bool) -> ();
 
 #[derive(Copy, Clone)]
 struct ParseRule<'p> {
@@ -67,16 +67,41 @@ impl<'p> ParseRule<'p> {
     }
 }
 
-pub struct Compiler<'c> {
+struct Local {
+    name: Token,
+    depth: usize,
+}
+
+struct Compiler {
+    locals: Vec<u8>,
+    scope_depth: usize,
+}
+
+impl Compiler {
+    fn new() -> Self {
+        Compiler {
+            locals: Vec::new(),
+            scope_depth: 0,
+        }
+    }
+
+    fn reset_compiler(&mut self) -> () {
+        self.locals.clear();
+        self.scope_depth = 0;
+    }
+}
+
+pub struct Parser<'c> {
     current: usize,
     tokens: &'c Vec<Token>,
     pub chunk: &'c mut Chunk,
     had_error: bool,
     panic_mode: bool,
     rules: HashMap<TokenType, ParseRule<'c>>,
+    current_compiler: Compiler,
 }
 
-impl<'c> Compiler<'c> {
+impl<'c> Parser<'c> {
     pub fn new(tokens: &'c Vec<Token>, chunk: &'c mut Chunk) -> Self {
         let mut rules = HashMap::new();
         let mut rule = |kind, prefix, infix, precedence| {
@@ -87,7 +112,7 @@ impl<'c> Compiler<'c> {
 
         rule(
             TokenType::TokenLeftParen,
-            Some(Compiler::grouping),
+            Some(Parser::grouping),
             None,
             Precedence::PrecNone,
         );
@@ -98,123 +123,123 @@ impl<'c> Compiler<'c> {
         rule(TokenType::TokenDot, None, None, Precedence::PrecNone);
         rule(
             TokenType::TokenMinus,
-            Some(Compiler::unary),
-            Some(Compiler::binary),
+            Some(Parser::unary),
+            Some(Parser::binary),
             Precedence::PrecTerm,
         );
         rule(
             TokenType::TokenPlus,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecTerm,
         );
         rule(
             TokenType::TokenPow,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecTerm,
         );
         rule(
             TokenType::TokenShiftLeft,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecTerm,
         );
         rule(
             TokenType::TokenShiftRigth,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecTerm,
         );
         rule(TokenType::TokenSemicolon, None, None, Precedence::PrecNone);
         rule(
             TokenType::TokenSlash,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecFactor,
         );
         rule(
             TokenType::TokenStar,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecFactor,
         );
         rule(
             TokenType::TokenBang,
-            Some(Compiler::unary),
+            Some(Parser::unary),
             None,
             Precedence::PrecNone,
         );
         rule(
             TokenType::TokenBangEqual,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecEquality,
         );
         rule(TokenType::TokenEqual, None, None, Precedence::PrecNone);
         rule(
             TokenType::TokenEqualEqual,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecEquality,
         );
         rule(
             TokenType::TokenGreater,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecComparsion,
         );
         rule(
             TokenType::TokenGreaterEqual,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecComparsion,
         );
         rule(
             TokenType::TokenLess,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecComparsion,
         );
         rule(
             TokenType::TokenLessEqual,
             None,
-            Some(Compiler::binary),
+            Some(Parser::binary),
             Precedence::PrecComparsion,
         );
         rule(
             TokenType::TokenIdentifier,
-            Some(Compiler::variable),
+            Some(Parser::variable),
             None,
             Precedence::PrecNone,
         );
         rule(
             TokenType::TokenString,
-            Some(Compiler::parse_string),
+            Some(Parser::parse_string),
             None,
             Precedence::PrecNone,
         );
         rule(
             TokenType::TokenNumber,
-            Some(Compiler::parse_number),
+            Some(Parser::parse_number),
             None,
             Precedence::PrecNone,
         );
         rule(
             TokenType::TokenTrue,
-            Some(Compiler::literal),
+            Some(Parser::literal),
             None,
             Precedence::PrecNone,
         );
         rule(
             TokenType::TokenFalse,
-            Some(Compiler::literal),
+            Some(Parser::literal),
             None,
             Precedence::PrecNone,
         );
         rule(
             TokenType::TokenNil,
-            Some(Compiler::literal),
+            Some(Parser::literal),
             None,
             Precedence::PrecNone,
         );
@@ -223,7 +248,7 @@ impl<'c> Compiler<'c> {
         rule(TokenType::TokenElse, None, None, Precedence::PrecNone);
         rule(
             TokenType::TokenFalse,
-            Some(Compiler::literal),
+            Some(Parser::literal),
             None,
             Precedence::PrecNone,
         );
@@ -241,16 +266,19 @@ impl<'c> Compiler<'c> {
         rule(TokenType::TokenError, None, None, Precedence::PrecNone);
         rule(TokenType::TokenEOF, None, None, Precedence::PrecNone);
 
-        return Compiler {
+        return Parser {
             tokens,
             current: 0,
             had_error: false,
             panic_mode: false,
             chunk,
             rules,
+            current_compiler: Compiler::new(),
         };
     }
     pub fn compile(&mut self) -> bool {
+        self.current_compiler.reset_compiler();
+
         while !self.match_token(TokenType::TokenEOF) {
             self.declaration();
         }
