@@ -302,6 +302,10 @@ impl<'c> Parser<'c> {
     fn statement(&mut self) -> () {
         if self.match_token(TokenType::TokenPrint) {
             self.print_statement();
+        } else if self.match_token(TokenType::TokenLeftBrace) {
+            self.begin_scope();
+            self.block();
+            self.end_scope();
         } else {
             self.expression_statement();
         }
@@ -402,6 +406,22 @@ impl<'c> Parser<'c> {
 
     fn expression(&mut self) -> () {
         self.parse_precedence(Precedence::PrecAssignment);
+    }
+
+    fn block(&mut self) -> () {
+        while !self.check(TokenType::TokenRightBrace) && !self.check(TokenType::TokenEOF) {
+            self.declaration();
+        }
+
+        self.consume(TokenType::TokenRightBrace, "Expected '}' after block.");
+    }
+
+    fn begin_scope(&mut self) -> () {
+        self.current_compiler.scope_depth += 1;
+    }
+
+    fn end_scope(&mut self) -> () {
+        self.current_compiler.scope_depth -= 1;
     }
 
     fn consume(&mut self, _type: TokenType, msg: &'c str) -> () {
