@@ -69,12 +69,12 @@ impl<'p> ParseRule<'p> {
 
 struct Local {
     name: Token,
-    depth: usize,
+    depth: isize,
 }
 
 struct Compiler {
-    locals: Vec<u8>,
-    scope_depth: usize,
+    locals: Vec<Local>,
+    scope_depth: isize,
 }
 
 impl Compiler {
@@ -339,11 +339,55 @@ impl<'c> Parser<'c> {
 
     fn parse_variable(&mut self, msg: &'c str) -> u8 {
         self.consume(TokenType::TokenIdentifier, msg);
+
+        self.declare_variable();
+        if self.current_compiler.scope_depth > 0 {
+            return 0;
+        }
+
         return self.identifier_constant(&self.tokens[self.current - 1]);
     }
 
     fn define_variable(&mut self, global: u8) -> () {
+        if self.current_compiler.scope_depth > 0 {
+            return;
+        }
+
         self.emit_byte(OpCode::OpDefineGlobal(global));
+    }
+
+    fn declare_variable(&mut self) -> () {
+        if self.current_compiler.scope_depth == 0 {
+            return;
+        }
+
+        let name = self.tokens[self.current - 1].clone();
+
+        // Check for duplicate names in scope and variable shadowing
+        for local in self.current_compiler.locals.iter_mut() {
+            if local.depth != -1 && local.depth < self.current_compiler.scope_depth {
+                break;
+            }
+
+            if name.source_str == local.name.source_str {
+                self.error("Already a variable with this name in this scope.");
+                return; //TODO might cause bug
+            }
+        }
+
+        self.add_local(name);
+    }
+
+    fn add_local(&mut self, name: Token) -> () {
+        if self.current_compiler.locals.len() == u8::max_value().into() {
+            self.error("Too many local variables in functino.");
+            return;
+        }
+
+        self.current_compiler.locals.push(Local {
+            name,
+            depth: self.current_compiler.scope_depth,
+        });
     }
 
     fn identifier_constant(&mut self, name: &Token) -> u8 {
@@ -422,6 +466,15 @@ impl<'c> Parser<'c> {
 
     fn end_scope(&mut self) -> () {
         self.current_compiler.scope_depth -= 1;
+
+        // Free up locals
+        while self.current_compiler.locals.len() > 0
+            && self.current_compiler.locals.last().unwrap().depth
+                > self.current_compiler.scope_depth
+        {
+            self.emit_byte(OpCode::OpPop);
+            self.current_compiler.locals.pop();
+        }
     }
 
     fn consume(&mut self, _type: TokenType, msg: &'c str) -> () {
@@ -433,12 +486,12 @@ impl<'c> Parser<'c> {
         self.error_at_current(msg);
     }
 
-    fn grouping(&mut self, can_assign: bool) -> () {
+    fn grouping(&mut self, _can_assign: bool) -> () {
         self.expression();
         self.consume(TokenType::TokenRightParen, "Expect ')' after expression.");
     }
 
-    fn unary(&mut self, can_assign: bool) -> () {
+    fn unary(&mut self, _can_assign: bool) -> () {
         let operator_type = self.tokens[self.current - 1]._type;
 
         // Compile the operand
@@ -452,7 +505,7 @@ impl<'c> Parser<'c> {
         }
     }
 
-    fn binary(&mut self, can_assign: bool) -> () {
+    fn binary(&mut self, _can_assign: bool) -> () {
         let operator_type = self.tokens[self.current - 1]._type;
         let rule = self.get_rule(operator_type);
         self.parse_precedence(rule.precedence.next());
@@ -475,7 +528,7 @@ impl<'c> Parser<'c> {
         }
     }
 
-    fn literal(&mut self, can_assign: bool) -> () {
+    fn literal(&mut self, _can_assign: bool) -> () {
         match self.tokens[self.current - 1]._type {
             TokenType::TokenFalse => self.emit_byte(OpCode::OpFalse),
             TokenType::TokenTrue => self.emit_byte(OpCode::OpTrue),
@@ -484,7 +537,7 @@ impl<'c> Parser<'c> {
         };
     }
 
-    fn parse_string(&mut self, can_assign: bool) -> () {
+    fn parse_string(&mut self, _can_assign: bool) -> () {
         self.emit_constant(Value::Object(ObjString {
             chars: self.tokens[self.current - 1].source_str.clone(),
         }));
@@ -542,7 +595,7 @@ impl<'c> Parser<'c> {
         precedence <= current_precedence
     }
 
-    fn parse_number(&mut self, can_assign: bool) -> () {
+    fn parse_number(&mut self, _can_assign: bool) -> () {
         let value = match self.tokens[self.current - 1].source_str.parse() {
             Ok(v) => v,
             Err(_) => 0.0, //TODO proper error handling

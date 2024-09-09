@@ -13,7 +13,7 @@ use std::collections::HashMap;
 
 use crate::chunk::Chunk;
 use crate::chunk::OpCode;
-use crate::compiler::Compiler;
+use crate::compiler::Parser;
 use crate::object::ObjString;
 
 // Vera stack based Virtual Machine
@@ -387,7 +387,7 @@ impl VM {
         let tokens = scanner.scan_tokens();
 
         // Create parser
-        let mut parser = Compiler::new(tokens, &mut chunk);
+        let mut parser = Parser::new(tokens, &mut chunk);
 
         // Compile tokens
         if !parser.compile() {

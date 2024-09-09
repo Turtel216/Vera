@@ -84,6 +84,16 @@ pub struct Token {
     pub line: usize,
 }
 
+impl Clone for Token {
+    fn clone(&self) -> Self {
+        Token {
+            _type: self._type,
+            source_str: self.source_str.clone(),
+            line: self.line,
+        }
+    }
+}
+
 // Scanner is used to tokenize the source string
 pub struct Scanner<'s> {
     source: &'s str,    // Source string to be scanned
