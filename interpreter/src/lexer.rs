@@ -84,6 +84,27 @@ pub struct Token {
     pub line: usize,
 }
 
+impl Token {
+    // Create a new Token
+    pub fn new(_type: TokenType, scanner: &Scanner) -> Token {
+        let lexeme = &scanner.source[scanner.start..scanner.current];
+
+        Token {
+            _type,
+            source_str: lexeme.to_string(),
+            line: scanner.line,
+        }
+    }
+    // Create an error Token, This type of Token has a msg as its source_str
+    pub fn error_token(msg: String, scanner: &Scanner) -> Token {
+        Token {
+            _type: TokenType::TokenError,
+            source_str: msg,
+            line: scanner.line,
+        }
+    }
+}
+
 impl Clone for Token {
     fn clone(&self) -> Self {
         Token {
@@ -398,26 +419,5 @@ impl<'s> Scanner<'s> {
         let char = self.peek();
         self.current += 1;
         char
-    }
-}
-
-impl Token {
-    // Create a new Token
-    pub fn new(_type: TokenType, scanner: &Scanner) -> Token {
-        let lexeme = &scanner.source[scanner.start..scanner.current];
-
-        Token {
-            _type,
-            source_str: lexeme.to_string(),
-            line: scanner.line,
-        }
-    }
-    // Create an error Token, This type of Token has a msg as its source_str
-    pub fn error_token(msg: String, scanner: &Scanner) -> Token {
-        Token {
-            _type: TokenType::TokenError,
-            source_str: msg,
-            line: scanner.line,
-        }
     }
 }
