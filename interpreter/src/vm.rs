@@ -13,8 +13,8 @@ use std::collections::HashMap;
 
 use crate::chunk::Chunk;
 use crate::chunk::OpCode;
-use crate::compiler::Parser;
 use crate::object::ObjString;
+use crate::parser::Parser;
 
 // Vera stack based Virtual Machine
 pub struct VM {

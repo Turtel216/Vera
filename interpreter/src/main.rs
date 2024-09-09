@@ -3,9 +3,9 @@
 // license that can be found in the LICENSE file.
 
 mod chunk;
-mod compiler;
 mod lexer;
 mod object;
+mod parser;
 mod value;
 mod vm;
 
