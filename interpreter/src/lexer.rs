@@ -73,6 +73,25 @@ impl fmt::Display for TokenType {
             TokenType::TokenFalse => write!(f, "Token False"),
             TokenType::TokenNil => write!(f, "Token Nil"),
             TokenType::TokenString => write!(f, "Token String"),
+            TokenType::TokenLeftParen => write!(f, "Token LeftParen"),
+            TokenType::TokenRightParen => write!(f, "Token RightPren"),
+            TokenType::TokenLeftBrace => write!(f, "Token LeftBrace"),
+            TokenType::TokenRightBrace => write!(f, "Token RightBrace"),
+            TokenType::TokenComma => write!(f, "Token Comma"),
+            TokenType::TokenDot => write!(f, "Token Dot"),
+            TokenType::TokenMinus => write!(f, "Token Minus"),
+            TokenType::TokenSemicolon => write!(f, "Token Semicolon"),
+            TokenType::TokenSlash => write!(f, "Token Slash"),
+            TokenType::TokenStar => write!(f, "Token Star"),
+            TokenType::TokenBangEqual => write!(f, "Token BangEqual"),
+            TokenType::TokenEqual => write!(f, "Token Equal"),
+            TokenType::TokenEqualEqual => write!(f, "Token EqualEqual"),
+            TokenType::TokenGreater => write!(f, "Token Greater"),
+            TokenType::TokenGreaterEqual => write!(f, "Token GreaterEqual"),
+            TokenType::TokenLess => write!(f, "Token Less"),
+            TokenType::TokenLessEqual => write!(f, "Token LessEqual"),
+            TokenType::TokenMinusMinus => write!(f, "Token MinusMinus"),
+            TokenType::TokenPlusPlus => write!(f, "Token PlusPlus"),
             _ => todo!(),
         }
     }
@@ -184,13 +203,14 @@ impl<'s> Scanner<'s> {
                 let res = if self.match_next('-') {
                     TokenType::TokenMinusMinus
                 } else {
-                    TokenType::TokenPlus
+                    TokenType::TokenMinus
                 };
 
                 self.tokens.push(Token::new(res, self));
             }
             '*' => self.tokens.push(Token::new(TokenType::TokenStar, self)),
             ',' => self.tokens.push(Token::new(TokenType::TokenComma, self)),
+            '/' => self.tokens.push(Token::new(TokenType::TokenSlash, self)),
             '+' => {
                 // Check if its a two character token
                 let res = if self.match_next('+') {
@@ -419,5 +439,66 @@ impl<'s> Scanner<'s> {
         let char = self.peek();
         self.current += 1;
         char
+    }
+}
+
+// ### TESTS ###
+
+#[cfg(test)]
+mod tests {
+
+    use crate::lexer;
+    use crate::lexer::TokenType;
+
+    #[test]
+    fn test_lexer() {
+        // Initialise lexer
+        let mut scanner = lexer::Scanner::new("( ) { } , . - + ; / * ^ ! != = == > >= < <= ++ --");
+        // Generate vector of TokenTypes
+        let tokens = scanner.scan_tokens();
+
+        // Vector holding the expected TokenTypes
+        let mut expected_tokens = vec![
+            TokenType::TokenLeftParen,
+            TokenType::TokenRightParen,
+            TokenType::TokenLeftBrace,
+            TokenType::TokenRightBrace,
+            TokenType::TokenComma,
+            TokenType::TokenDot,
+            TokenType::TokenMinus,
+            TokenType::TokenPlus,
+            TokenType::TokenSemicolon,
+            TokenType::TokenSlash,
+            TokenType::TokenStar,
+            TokenType::TokenPow,
+            TokenType::TokenBang,
+            TokenType::TokenBangEqual,
+            TokenType::TokenEqual,
+            TokenType::TokenEqualEqual,
+            TokenType::TokenGreater,
+            TokenType::TokenGreaterEqual,
+            TokenType::TokenLess,
+            TokenType::TokenLessEqual,
+            TokenType::TokenPlusPlus,
+            TokenType::TokenMinusMinus,
+            TokenType::TokenEOF,
+        ];
+
+        // Make sure both vectors hold the same amount of TokenTypes
+        assert!(tokens.len() == expected_tokens.len());
+
+        let mut etoken_iter = expected_tokens.iter(); // Expected Token Iterator
+
+        for token in tokens {
+            // Get expected token
+            let etoken = match etoken_iter.next() {
+                Some(v) => v,
+                None => panic!("Couldn't get next token"),
+            };
+
+            // Assure that the token generated
+            // by the lexer is equal to the expected token
+            assert!(token._type == *etoken);
+        }
     }
 }
