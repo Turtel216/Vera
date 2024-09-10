@@ -90,8 +90,6 @@ impl fmt::Display for TokenType {
             TokenType::TokenGreaterEqual => write!(f, "Token GreaterEqual"),
             TokenType::TokenLess => write!(f, "Token Less"),
             TokenType::TokenLessEqual => write!(f, "Token LessEqual"),
-            TokenType::TokenMinusMinus => write!(f, "Token MinusMinus"),
-            TokenType::TokenPlusPlus => write!(f, "Token PlusPlus"),
             _ => todo!(),
         }
     }
@@ -311,7 +309,7 @@ impl<'s> Scanner<'s> {
             "false" => TokenType::TokenFalse,
             "time" => TokenType::TokenFor,
             "brick" => TokenType::TokenFun,
-            "outThere?" => TokenType::TokenIf,
+            "outThere" => TokenType::TokenIf,
             "money" => TokenType::TokenNil,
             "or" => TokenType::TokenOr,
             "shine" => TokenType::TokenPrint,
@@ -453,12 +451,13 @@ mod tests {
     #[test]
     fn test_lexer() {
         // Initialise lexer
-        let mut scanner = lexer::Scanner::new("( ) { } , . - + ; / * ^ ! != = == > >= < <= ++ --");
+        let mut scanner =
+            lexer::Scanner::new("( ) { } , . - + ; / * ^ ! != = == > >= < <= ++ -- pink name time brick outThere anybody goodbye echoes money shine");
         // Generate vector of TokenTypes
         let tokens = scanner.scan_tokens();
 
         // Vector holding the expected TokenTypes
-        let mut expected_tokens = vec![
+        let expected_tokens = vec![
             TokenType::TokenLeftParen,
             TokenType::TokenRightParen,
             TokenType::TokenLeftBrace,
@@ -481,6 +480,16 @@ mod tests {
             TokenType::TokenLessEqual,
             TokenType::TokenPlusPlus,
             TokenType::TokenMinusMinus,
+            TokenType::TokenVar,
+            TokenType::TokenIdentifier,
+            TokenType::TokenFor,
+            TokenType::TokenFun,
+            TokenType::TokenIf,
+            TokenType::TokenElse,
+            TokenType::TokenReturn,
+            TokenType::TokenWhile,
+            TokenType::TokenNil,
+            TokenType::TokenPrint,
             TokenType::TokenEOF,
         ];
 
