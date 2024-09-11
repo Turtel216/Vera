@@ -4,6 +4,8 @@
 
 use std::fmt;
 
+//TODO Fix line number always being on 1
+
 // Types of language tokens
 #[derive(Eq, PartialEq, Debug, Copy, Clone, Hash)]
 pub enum TokenType {
@@ -99,6 +101,7 @@ pub struct Token {
     pub _type: TokenType,
     pub source_str: String,
     pub line: usize,
+    pub col: usize,
 }
 
 impl Token {
@@ -110,6 +113,7 @@ impl Token {
             _type,
             source_str: lexeme.to_string(),
             line: scanner.line,
+            col: scanner.col - lexeme.len(),
         }
     }
     // Create an error Token, This type of Token has a msg as its source_str
@@ -118,6 +122,7 @@ impl Token {
             _type: TokenType::TokenError,
             source_str: msg,
             line: scanner.line,
+            col: scanner.col,
         }
     }
 }
@@ -128,6 +133,7 @@ impl Clone for Token {
             _type: self._type,
             source_str: self.source_str.clone(),
             line: self.line,
+            col: self.col,
         }
     }
 }
@@ -139,6 +145,7 @@ pub struct Scanner<'s> {
     start: usize,       // Start of current lexeme
     current: usize,     // Index of current character
     line: usize,        // Current line in source string
+    col: usize,         // Current column in source string
 }
 
 impl<'s> Scanner<'s> {
@@ -149,6 +156,7 @@ impl<'s> Scanner<'s> {
             start: 0,
             current: 0,
             line: 1,
+            col: 1,
             tokens: Vec::new(),
         }
     }
@@ -166,6 +174,7 @@ impl<'s> Scanner<'s> {
             _type: TokenType::TokenEOF,
             source_str: "EOF".to_string(),
             line: self.line,
+            col: self.col,
         });
 
         return &self.tokens;
@@ -268,6 +277,10 @@ impl<'s> Scanner<'s> {
                 let res = self.lex_string();
                 self.tokens.push(res);
             }
+            '\n' => {
+                self.line += 1;
+                self.col = 1;
+            }
             c => {
                 if c.is_numeric() {
                     self.lex_number();
@@ -349,6 +362,7 @@ impl<'s> Scanner<'s> {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
                 self.line += 1;
+                self.col = 1;
             }
             self.advance();
         }
@@ -405,12 +419,16 @@ impl<'s> Scanner<'s> {
                 }
                 '\n' => {
                     self.line += 1;
+                    self.col = 1;
                     self.advance();
                 }
                 '/' if self.peek_next() == '/' => {
                     while self.peek() != '\n' && !self.is_at_end() {
                         self.advance();
                     }
+                    // Entered new line
+                    self.line += 1;
+                    self.col = 1;
                 }
                 _ => return,
             }
@@ -436,6 +454,7 @@ impl<'s> Scanner<'s> {
     fn advance(&mut self) -> char {
         let char = self.peek();
         self.current += 1;
+        self.col += 1;
         char
     }
 }

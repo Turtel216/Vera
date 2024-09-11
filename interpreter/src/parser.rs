@@ -650,7 +650,7 @@ impl<'c> Parser<'c> {
         self.panic_mode = true;
 
         let token = &self.tokens[index];
-        print!("[line {}] Error", token.line);
+        print!("[line {}:{}] Error", token.line, token.col);
 
         match token._type {
             TokenType::TokenEOF => print!(" at end"),
