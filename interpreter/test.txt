@@ -1,3 +1,0 @@
-pink x = 5;
-pink y = 2;
-pink shine = 1;

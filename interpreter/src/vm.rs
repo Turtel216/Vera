@@ -372,6 +372,28 @@ impl VM {
                         }
                     }
                 }
+                OpCode::OpGetLocal(i) => {
+                    let local_name = self.chunk.read_string(i);
+                    match self.globals.get(&local_name) {
+                        Some(value) => self.push(value.clone()),
+                        None => {
+                            let msg = format!("Undefined variable '{}'.", local_name);
+                            self.runtime_error(&msg);
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    }
+                }
+                OpCode::OpSetLocal(i) => {
+                    let local_name = self.chunk.read_string(i);
+                    match self.globals.get(&local_name) {
+                        Some(value) => self.push(value.clone()),
+                        None => {
+                            let msg = format!("Undefined variable '{}'.", local_name);
+                            self.runtime_error(&msg);
+                            return InterpretResult::InterpretRuneTimeError;
+                        }
+                    }
+                }
             }
             // Continue to next instruction
             self.current += 1;

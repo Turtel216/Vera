@@ -396,6 +396,16 @@ impl<'c> Parser<'c> {
         }));
     }
 
+    fn resolve_local(&self, compiler: &Compiler, name: &Token) -> isize {
+        for (i, local) in compiler.locals.iter().enumerate() {
+            if name.source_str == local.name.source_str {
+                return i as isize;
+            }
+        }
+
+        return -1;
+    }
+
     fn synchronize(&mut self) -> () {
         self.panic_mode = false;
 
@@ -548,13 +558,19 @@ impl<'c> Parser<'c> {
     }
 
     fn named_variable(&mut self, name: &Token, can_assign: bool) -> () {
-        let arg = self.identifier_constant(&name);
+        let (op_get, op_set) = match self.resolve_local(&self.current_compiler, &name) {
+            -1 => {
+                let arg = self.identifier_constant(&name);
+                (OpCode::OpGetGlobal(arg), OpCode::OpSetGlobal(arg))
+            }
+            arg => (OpCode::OpGetLocal(arg as u8), OpCode::OpSetLocal(arg as u8)),
+        };
 
         if self.match_token(TokenType::TokenEqual) && can_assign {
             self.expression();
-            self.emit_byte(OpCode::OpSetGlobal(arg));
+            self.emit_byte(op_set);
         } else {
-            self.emit_byte(OpCode::OpGetGlobal(arg));
+            self.emit_byte(op_get);
         }
     }
 
