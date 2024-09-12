@@ -2,10 +2,11 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
+// Enum representing the possible outcomes of interpreting bytecode.
 pub enum InterpretResult {
-    InterpretOk,
-    InterpretCompileError,
-    InterpretRuneTimeError,
+    InterpretOk,            // Execution completed successfully.
+    InterpretCompileError,  // There was an error during the compilation phase.
+    InterpretRuneTimeError, // An error occurred during execution.
 }
 
 use std::any::Any;
@@ -16,7 +17,7 @@ use crate::chunk::OpCode;
 use crate::object::ObjString;
 use crate::parser::Parser;
 
-// Vera stack based Virtual Machine
+/// Virtual Machine (VM) for executing Vera bytecode in a stack-based architecture.
 pub struct VM {
     pub chunk: Chunk,      // Byte code chunk
     pub ip: Vec<OpCode>,   // VM instructions
@@ -33,7 +34,13 @@ impl VM {
     // TODO
     pub fn free_vm(&mut self) -> () {}
 
-    // Run vm instuctions
+    /// Executes bytecode instructions stored in the `chunk`.
+    ///
+    /// The function loops over each instruction, processes it,
+    /// and handles various opcodes such as mathematical operations,
+    /// stack manipulations, and conditional operations.
+    ///
+    /// Returns `InterpretResult` indicating the result of execution.
     fn run(&mut self) -> InterpretResult {
         // Loop over all instruction inside the byte code chunk
         // and execute them
@@ -270,23 +277,20 @@ impl VM {
                     let pow = value_a.powf(value_b);
                     self.push(Value::Number(pow));
                 }
-                // Push true/false/nil values onto the stack
-                OpCode::OpTrue => self.push(Value::Bool(true)),
-                OpCode::OpFalse => self.push(Value::Bool(false)),
-                OpCode::OpNil => self.push(Value::Nil),
+                OpCode::OpTrue => self.push(Value::Bool(true)), // Push `true` onto the stack.
+                OpCode::OpFalse => self.push(Value::Bool(false)), // Push `false` onto the stack.
+                OpCode::OpNil => self.push(Value::Nil),         // Push `nil` onto the stack.
                 OpCode::OpNot => {
-                    // Get latest value and return the
-                    // oposite bool value or nil
+                    // Negate the top boolean value or return `nil`.
                     let val = match self.pop() {
                         Value::Nil => Value::Nil,
                         Value::Bool(true) => Value::Bool(false),
                         Value::Bool(false) => Value::Bool(true),
                         _ => {
-                            self.runtime_error("Operand must be either a bool or nil");
+                            self.runtime_error("Operand must be a bool or nil.");
                             return InterpretResult::InterpretRuneTimeError;
                         }
                     };
-                    // Push the value onto the stack
                     self.push(val);
                 }
                 OpCode::OpEqual => {

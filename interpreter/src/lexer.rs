@@ -526,7 +526,7 @@ mod tests {
 
             // Assure that the token generated
             // by the lexer is equal to the expected token
-            assert!(token._type == *etoken);
+            assert_eq!(token._type, *etoken);
         }
     }
 }
