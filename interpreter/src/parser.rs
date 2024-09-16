@@ -78,6 +78,7 @@ impl<'p> ParseRule<'p> {
     }
 }
 
+#[derive(Clone)]
 struct Local {
     name: Token,
     depth: isize,
@@ -89,6 +90,15 @@ struct Local {
 struct Compiler {
     locals: Vec<Local>, // Stack of local variables
     scope_depth: isize, // Current depth of nested scopes
+}
+
+impl Clone for Compiler {
+    fn clone(&self) -> Self {
+        Self {
+            locals: self.locals.clone(),
+            scope_depth: self.scope_depth,
+        }
+    }
 }
 
 impl Compiler {
@@ -332,6 +342,8 @@ impl<'c> Parser<'c> {
             self.begin_scope();
             self.block();
             self.end_scope();
+        } else if self.match_token(TokenType::TokenIf) {
+            self.if_statement();
         } else {
             self.expression_statement();
         }
@@ -341,6 +353,17 @@ impl<'c> Parser<'c> {
         self.expression();
         self.consume(TokenType::TokenSemicolon, "Expected ';' after expression");
         self.emit_byte(OpCode::OpPop);
+    }
+
+    fn if_statement(&mut self) -> () {
+        self.consume(TokenType::TokenLeftParen, "Expected '(' after 'if..TODO'.");
+        self.expression();
+        self.consume(TokenType::TokenRightParen, "Expected ')' after condition.");
+
+        let the_jump = self.emit_jump(OpCode::OpJumpIfFalse);
+        self.statement();
+
+        self.patch_jump(then_jump);
     }
 
     fn print_statement(&mut self) -> () {
@@ -428,7 +451,7 @@ impl<'c> Parser<'c> {
         }));
     }
 
-    fn resolve_local(&mut self, compiler: &Compiler, name: &Token) -> isize {
+    fn resolve_local(&mut self, compiler: Compiler, name: &Token) -> isize {
         for (i, local) in compiler.locals.iter().enumerate() {
             if name.source_str == local.name.source_str {
                 if local.depth == -1 {
@@ -593,7 +616,7 @@ impl<'c> Parser<'c> {
     }
 
     fn named_variable(&mut self, name: &Token, can_assign: bool) -> () {
-        let (op_get, op_set) = match self.resolve_local(&self.current_compiler, &name) {
+        let (op_get, op_set) = match self.resolve_local(self.current_compiler.clone(), &name) {
             -1 => {
                 let arg = self.identifier_constant(&name);
                 (OpCode::OpGetGlobal(arg), OpCode::OpSetGlobal(arg))
@@ -675,6 +698,14 @@ impl<'c> Parser<'c> {
     fn emit_bytes(&mut self, byte1: OpCode, byte2: OpCode) -> () {
         self.emit_byte(byte1);
         self.emit_byte(byte2);
+    }
+
+    fn emit_jump(&mut self, code: OpCode) -> () {
+        todo!()
+    }
+
+    fn patch_jump(offset: isize) -> () {
+        todo!()
     }
 
     fn emit_constant(&mut self, value: Value) -> () {
