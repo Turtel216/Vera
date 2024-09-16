@@ -374,8 +374,17 @@ impl<'c> Parser<'c> {
         return self.identifier_constant(&self.tokens[self.current - 1]);
     }
 
+    fn mark_initialized(&mut self) -> () {
+        self.current_compiler
+            .locals
+            .last_mut()
+            .unwrap_or_else(|| panic!("Could not get last local in mark_initialized"))
+            .depth = self.current_compiler.scope_depth;
+    }
+
     fn define_variable(&mut self, global: u8) -> () {
         if self.current_compiler.scope_depth > 0 {
+            self.mark_initialized();
             return;
         }
 
@@ -410,10 +419,7 @@ impl<'c> Parser<'c> {
             return;
         }
 
-        self.current_compiler.locals.push(Local {
-            name,
-            depth: self.current_compiler.scope_depth,
-        });
+        self.current_compiler.locals.push(Local { name, depth: -1 });
     }
 
     fn identifier_constant(&mut self, name: &Token) -> u8 {
@@ -422,9 +428,12 @@ impl<'c> Parser<'c> {
         }));
     }
 
-    fn resolve_local(&self, compiler: &Compiler, name: &Token) -> isize {
+    fn resolve_local(&mut self, compiler: &Compiler, name: &Token) -> isize {
         for (i, local) in compiler.locals.iter().enumerate() {
             if name.source_str == local.name.source_str {
+                if local.depth == -1 {
+                    self.error("Can't read local variable in its own initializer.");
+                }
                 return i as isize;
             }
         }
