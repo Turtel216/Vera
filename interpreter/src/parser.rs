@@ -361,9 +361,20 @@ impl<'c> Parser<'c> {
         self.consume(TokenType::TokenRightParen, "Expected ')' after condition.");
 
         let then_jump = self.emit_jump(OpCode::OpJumpIfFalse(0xffff)) as usize;
+        self.emit_byte(OpCode::OpPop);
         self.statement();
 
+        let else_jump = self.emit_jump(OpCode::OpJump(0xffff)) as usize;
+
         self.patch_jump(then_jump);
+
+        self.emit_byte(OpCode::OpPop);
+
+        if self.match_token(TokenType::TokenElse) {
+            self.statement();
+        }
+
+        self.patch_jump(else_jump);
     }
 
     fn print_statement(&mut self) -> () {
