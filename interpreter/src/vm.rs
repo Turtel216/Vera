@@ -20,10 +20,11 @@ use crate::parser::Parser;
 /// Virtual Machine (VM) for executing Vera bytecode in a stack-based architecture.
 pub struct VM {
     pub chunk: Chunk,      // Byte code chunk
-    pub ip: Vec<OpCode>,   // VM instructions
+    pub code: Vec<OpCode>, // VM instructions
     pub stack: Vec<Value>, // VM value stack
     pub current: usize,    // Index of current instruction
     pub globals: HashMap<String, Value>,
+    pub ip: usize,
 }
 
 use crate::lexer::Scanner;
@@ -45,7 +46,7 @@ impl VM {
         // Loop over all instruction inside the byte code chunk
         // and execute them
         loop {
-            match self.ip[self.current] {
+            match self.code[self.current] {
                 OpCode::OpReturn => {
                     return InterpretResult::InterpretOk;
                 }
@@ -398,6 +399,11 @@ impl VM {
                         }
                     }
                 }
+                OpCode::OpJumpIfFalse(offset) => {
+                    if self.peek(0).is_falsey() {
+                        self.ip += offset as usize; //TODO
+                    }
+                }
             }
             // Continue to next instruction
             self.current += 1;
@@ -423,7 +429,7 @@ impl VM {
 
         // Init vm
         self.chunk = chunk;
-        self.ip = self.chunk.code.clone();
+        self.code = self.chunk.code.clone();
         self.current = 0;
 
         // Run instructions
@@ -440,6 +446,11 @@ impl VM {
     // pop from value stack
     pub fn pop(&mut self) -> Value {
         self.stack.pop().expect("Couldn't Pop from VM stack")
+    }
+
+    fn peek(&self, n: usize) -> Value {
+        let size = self.stack.len();
+        self.stack[size - 1 - n].clone()
     }
 
     // Check if two value types are equal

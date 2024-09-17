@@ -21,6 +21,14 @@ impl Value {
             Value::Object(v) => println!("{}", v),
         }
     }
+
+    pub fn is_falsey(&self) -> bool {
+        match self {
+            Value::Nil => true,
+            Value::Bool(v) => !v,
+            _ => false,
+        }
+    }
 }
 
 pub struct ValueArray {

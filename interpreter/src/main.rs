@@ -42,7 +42,8 @@ fn repl() -> () {
     // Initialize vm
     let mut vm = VM {
         chunk: Chunk::new(),
-        ip: Vec::new(),
+        code: Vec::new(),
+        ip: 0,
         stack: Vec::new(),
         current: 0,
         globals: HashMap::new(),
@@ -78,7 +79,8 @@ fn run_file(_path: &String) -> std::io::Result<()> {
     // Initialize vm
     let mut vm = VM {
         chunk: Chunk::new(),
-        ip: Vec::new(),
+        code: Vec::new(),
+        ip: 0,
         stack: Vec::new(),
         current: 0,
         globals: HashMap::new(),

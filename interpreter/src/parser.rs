@@ -6,7 +6,7 @@
 // and precedence, manages compiler state, and handles expressions, variables, and control flow structures.
 
 use crate::object::ObjString;
-use std::collections::HashMap;
+use std::{collections::HashMap, u16};
 
 use crate::{
     chunk::{Chunk, OpCode},
@@ -360,7 +360,7 @@ impl<'c> Parser<'c> {
         self.expression();
         self.consume(TokenType::TokenRightParen, "Expected ')' after condition.");
 
-        let the_jump = self.emit_jump(OpCode::OpJumpIfFalse);
+        let then_jump = self.emit_jump(OpCode::OpJumpIfFalse(0xffff)) as usize;
         self.statement();
 
         self.patch_jump(then_jump);
@@ -700,12 +700,23 @@ impl<'c> Parser<'c> {
         self.emit_byte(byte2);
     }
 
-    fn emit_jump(&mut self, code: OpCode) -> () {
-        todo!()
+    fn emit_jump(&mut self, instruction: OpCode) -> isize {
+        self.emit_byte(instruction);
+        self.emit_byte(OpCode::OpJumpIfFalse(0xff)); //TODO
+        self.emit_byte(OpCode::OpJumpIfFalse(0xff));
+        return (self.chunk.code.len() - 2) as isize;
     }
 
-    fn patch_jump(offset: isize) -> () {
-        todo!()
+    fn patch_jump(&mut self, offset: usize) -> () {
+        // -2 to adjust the bytecode for the jump offset itself
+        let jump = (self.chunk.code.len() - 2) as u16;
+
+        if jump > u16::max_value() {
+            self.error("Too much code to jump over.");
+        }
+
+        self.chunk.code[offset] = OpCode::OpJumpIfFalse((jump >> 8) & 0xff);
+        self.chunk.code[offset - 1] = OpCode::OpJumpIfFalse(jump & 0xff);
     }
 
     fn emit_constant(&mut self, value: Value) -> () {
