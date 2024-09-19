@@ -447,7 +447,7 @@ impl<'s> Scanner<'s> {
 
     // Check if scanner reached the end of source string
     fn is_at_end(&self) -> bool {
-        return self.current == self.source.len() - 1;
+        return self.current == self.source.len();
     }
 
     // Get current char and continue to next character
