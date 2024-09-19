@@ -402,8 +402,8 @@ impl<'c> Parser<'c> {
         self.expression();
         self.consume(TokenType::TokenRightParen, "Expected ')' after condition.");
 
-        let exit_jump = self.emit_jump(OpCode::OpJumpIfFalse(0xff)) as usize;
-        self.emit_jump(OpCode::OpPop);
+        let exit_jump = self.emit_byte(OpCode::OpJumpIfFalse(0xffff));
+        self.emit_byte(OpCode::OpPop);
         self.statement();
         self.emit_loop(loop_start);
 
@@ -760,7 +760,7 @@ impl<'c> Parser<'c> {
     }
 
     fn emit_loop(&mut self, loop_start: usize) -> () {
-        let offset = (self.chunk.code.len() - loop_start + 2) as u16;
+        let offset = self.chunk.code.len() - loop_start;
         let offset = match u16::try_from(offset) {
             Ok(v) => v,
             Err(_) => {

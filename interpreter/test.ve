@@ -1,7 +1,8 @@
 pink i = 0;
 
-outThere (i == 0) {
-  shine "Succes!";
-} anybody {
-  shine "Error!";
+echoes (i > 0) {
+  shine i;
+  i = i + 1;
 }
+
+shine "Finish";
