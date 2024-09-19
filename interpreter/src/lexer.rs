@@ -447,7 +447,7 @@ impl<'s> Scanner<'s> {
 
     // Check if scanner reached the end of source string
     fn is_at_end(&self) -> bool {
-        return self.current == self.source.len();
+        return self.current == self.source.len() - 1;
     }
 
     // Get current char and continue to next character
@@ -471,8 +471,11 @@ mod tests {
     #[test]
     fn test_lexer() {
         // Initialise lexer
-        let mut scanner =
-            lexer::Scanner::new("( ) { } , . - + ; / * ^ ! != = == > >= < <= ++ -- pink name time brick outThere anybody goodbye echoes money shine");
+        let mut scanner = lexer::Scanner::new(
+            "( ) { } , . - + ; \n
+                / * ^ ! != = == > >= < <= ++ -- pink  name \n
+                time brick outThere anybody goodbye   echoes money shine",
+        );
         // Generate vector of TokenTypes
         let tokens = scanner.scan_tokens();
 

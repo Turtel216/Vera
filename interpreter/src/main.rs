@@ -13,6 +13,7 @@ use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::fs::File;
+use std::io;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::process;
@@ -38,9 +39,6 @@ fn main() {
 
 // Command line interpreter
 fn repl() -> () {
-    use std::io::{stdin, stdout, Write};
-    let mut str = String::new();
-
     // Initialize vm
     let mut vm = VM {
         chunk: Chunk::new(),
@@ -53,20 +51,15 @@ fn repl() -> () {
 
     loop {
         print!("> ");
-        let _ = stdout().flush();
-        stdin()
-            .read_line(&mut str)
-            .expect("Did not enter a corrent string.");
-
-        if let Some('\n') = str.chars().next_back() {
-            str.pop();
+        io::stdout().flush().unwrap();
+        let mut line = String::new();
+        io::stdin()
+            .read_line(&mut line)
+            .expect("Unable to read line from the REPL");
+        if line.is_empty() {
+            break;
         }
-        if let Some('\r') = str.chars().next_back() {
-            str.pop();
-        }
-
-        vm.interpret(&str);
-        str.clear();
+        vm.interpret(&line);
     }
 }
 
@@ -90,6 +83,8 @@ fn run_file(path: &String) -> std::io::Result<()> {
         current: 0,
         globals: HashMap::new(),
     };
+
+    println!("{}", code.len());
 
     vm.interpret(&code);
 
