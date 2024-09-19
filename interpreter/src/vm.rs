@@ -407,6 +407,9 @@ impl VM {
                 OpCode::OpJump(offset) => {
                     self.ip += offset as usize;
                 }
+                OpCode::OpLoop(offset) => {
+                    self.ip -= offset as usize + 1;
+                }
             }
             // Continue to next instruction
             self.current += 1;

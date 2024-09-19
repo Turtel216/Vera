@@ -26,7 +26,7 @@ fn main() {
         repl();
     } else if args.len() == 2 {
         match run_file(&args[1]) {
-            Ok(()) => println!("Success"),
+            Ok(()) => (),
             Err(e) => println!("Error: {e:?}"),
         }
     } else {

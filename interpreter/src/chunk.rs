@@ -34,6 +34,7 @@ pub enum OpCode {
     OpPop,
     OpJumpIfFalse(u16),
     OpJump(u16),
+    OpLoop(u16),
 }
 
 use std::fmt;
@@ -69,6 +70,7 @@ impl fmt::Display for OpCode {
             OpCode::OpSetLocal(v) => write!(f, "OpSetLocal {}", v),
             OpCode::OpJumpIfFalse(v) => write!(f, "OpJumpIfFalse {}", v),
             OpCode::OpJump(v) => write!(f, "OpJump {}", v),
+            OpCode::OpLoop(v) => write!(f, "OpLoop {}", v),
         }
     }
 }

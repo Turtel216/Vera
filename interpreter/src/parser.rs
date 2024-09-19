@@ -354,6 +354,8 @@ impl<'c> Parser<'c> {
             self.end_scope();
         } else if self.match_token(TokenType::TokenIf) {
             self.if_statement();
+        } else if self.match_token(TokenType::TokenWhile) {
+            self.while_statement();
         } else {
             self.expression_statement();
         }
@@ -391,6 +393,22 @@ impl<'c> Parser<'c> {
         self.expression();
         self.consume(TokenType::TokenSemicolon, "Expected  ';' after value.");
         self.emit_byte(OpCode::OpPrint);
+    }
+
+    fn while_statement(&mut self) -> () {
+        let loop_start = self.chunk.code.len();
+
+        self.consume(TokenType::TokenLeftParen, "Expected '(' after 'TODO'.");
+        self.expression();
+        self.consume(TokenType::TokenRightParen, "Expected ')' after condition.");
+
+        let exit_jump = self.emit_jump(OpCode::OpJumpIfFalse(0xff)) as usize;
+        self.emit_jump(OpCode::OpPop);
+        self.statement();
+        self.emit_loop(loop_start);
+
+        self.patch_jump(exit_jump);
+        self.emit_byte(OpCode::OpPop);
     }
 
     fn var_declaration(&mut self) -> () {
@@ -739,6 +757,19 @@ impl<'c> Parser<'c> {
     fn emit_bytes(&mut self, byte1: OpCode, byte2: OpCode) -> () {
         self.emit_byte(byte1);
         self.emit_byte(byte2);
+    }
+
+    fn emit_loop(&mut self, loop_start: usize) -> () {
+        let offset = (self.chunk.code.len() - loop_start + 2) as u16;
+        let offset = match u16::try_from(offset) {
+            Ok(v) => v,
+            Err(_) => {
+                self.error("Loop bodey too large.");
+                0xffff
+            }
+        };
+
+        self.emit_byte(OpCode::OpLoop(offset));
     }
 
     fn emit_jump(&mut self, instruction: OpCode) -> isize {
