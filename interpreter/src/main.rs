@@ -12,6 +12,9 @@ mod vm;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::BufReader;
 use std::process;
 
 use chunk::Chunk;
@@ -24,7 +27,10 @@ fn main() {
     if args.len() == 1 {
         repl();
     } else if args.len() == 2 {
-        run_file(&args[1]);
+        match run_file(&args[1]) {
+            Ok(()) => (),
+            Err(e) => println!("Error: {e:?}"),
+        }
     } else {
         println!("Usage: pf [path]");
     }
@@ -65,8 +71,8 @@ fn repl() -> () {
 }
 
 // File interpreter
-fn run_file(path: &String) {
-    // Read from file
+fn run_file(path: &String) -> std::io::Result<()> {
+    //TODO add proper error handling
     let code = match fs::read_to_string(path) {
         Ok(content) => content,
         Err(error) => {
@@ -85,5 +91,7 @@ fn run_file(path: &String) {
         globals: HashMap::new(),
     };
 
-    let error = vm.interpret(&code); //TODO
+    vm.interpret(&code);
+
+    Ok(())
 }

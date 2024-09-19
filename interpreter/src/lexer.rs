@@ -281,10 +281,6 @@ impl<'s> Scanner<'s> {
                 let res = self.lex_string();
                 self.tokens.push(res);
             }
-            '\n' => {
-                self.line += 1;
-                self.col = 1;
-            }
             c => {
                 if c.is_numeric() {
                     self.lex_number();
@@ -377,8 +373,8 @@ impl<'s> Scanner<'s> {
             return Token::error_token("Unterminated string".to_string(), self);
         }
 
-        let token = Token::new(TokenType::TokenString, self);
         self.advance();
+        let token = Token::new(TokenType::TokenString, self);
         return token;
     }
 
@@ -397,7 +393,7 @@ impl<'s> Scanner<'s> {
 
     // Get next character. Get \0 if the next character is at the end
     fn peek_next(&self) -> char {
-        if self.is_at_end() {
+        if self.current > self.source.len() - 2 {
             return '\0';
         }
 
@@ -451,7 +447,7 @@ impl<'s> Scanner<'s> {
 
     // Check if scanner reached the end of source string
     fn is_at_end(&self) -> bool {
-        return self.current == self.source.len();
+        return self.current == self.source.len() - 1;
     }
 
     // Get current char and continue to next character
