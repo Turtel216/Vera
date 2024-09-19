@@ -12,10 +12,8 @@ mod vm;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
-use std::fs::File;
 use std::io;
 use std::io::prelude::*;
-use std::io::BufReader;
 use std::process;
 
 use chunk::Chunk;
@@ -45,7 +43,6 @@ fn repl() -> () {
         code: Vec::new(),
         ip: 0,
         stack: Vec::new(),
-        current: 0,
         globals: HashMap::new(),
     };
 
@@ -80,11 +77,8 @@ fn run_file(path: &String) -> std::io::Result<()> {
         code: Vec::new(),
         ip: 0,
         stack: Vec::new(),
-        current: 0,
         globals: HashMap::new(),
     };
-
-    println!("{}", code.len());
 
     vm.interpret(&code);
 

@@ -108,9 +108,10 @@ impl<'c> Chunk {
         }
     }
     // Append a byte to the chunk
-    pub fn write_chunk(&mut self, byte: OpCode, line: usize) -> () {
+    pub fn write_chunk(&mut self, byte: OpCode, line: usize) -> usize {
         self.code.push(byte);
         self.line.push(line);
+        self.code.len() - 1
     }
     // Clear data hold by chunk
     pub fn free_chunk(&mut self) -> () {

@@ -372,11 +372,11 @@ impl<'c> Parser<'c> {
         self.expression();
         self.consume(TokenType::TokenRightParen, "Expected ')' after condition.");
 
-        let then_jump = self.emit_jump(OpCode::OpJumpIfFalse(0xffff)) as usize;
+        let then_jump = self.emit_byte(OpCode::OpJumpIfFalse(0xffff));
         self.emit_byte(OpCode::OpPop);
         self.statement();
 
-        let else_jump = self.emit_jump(OpCode::OpJump(0xffff)) as usize;
+        let else_jump = self.emit_byte(OpCode::OpJump(0xffff));
 
         self.patch_jump(then_jump);
 
@@ -618,7 +618,7 @@ impl<'c> Parser<'c> {
             TokenType::TokenMinus => self.emit_byte(OpCode::OpNegate),
             TokenType::TokenBang => self.emit_byte(OpCode::OpNot),
             _ => return,
-        }
+        };
     }
 
     fn binary(&mut self, _can_assign: bool) -> () {
@@ -641,7 +641,7 @@ impl<'c> Parser<'c> {
             TokenType::TokenLess => self.emit_byte(OpCode::OpLess),
             TokenType::TokenLessEqual => self.emit_bytes(OpCode::OpGreater, OpCode::OpNot),
             _ => panic!("Invalid binary operator!"),
-        }
+        };
     }
 
     fn literal(&mut self, _can_assign: bool) -> () {
@@ -749,14 +749,14 @@ impl<'c> Parser<'c> {
         return constant - 1; //TODO
     }
 
-    fn emit_byte(&mut self, byte: OpCode) -> () {
+    fn emit_byte(&mut self, byte: OpCode) -> usize {
         self.chunk
-            .write_chunk(byte, self.tokens[self.current - 1].line);
+            .write_chunk(byte, self.tokens[self.current - 1].line)
     }
 
-    fn emit_bytes(&mut self, byte1: OpCode, byte2: OpCode) -> () {
+    fn emit_bytes(&mut self, byte1: OpCode, byte2: OpCode) -> usize {
         self.emit_byte(byte1);
-        self.emit_byte(byte2);
+        self.emit_byte(byte2)
     }
 
     fn emit_loop(&mut self, loop_start: usize) -> () {
@@ -781,14 +781,21 @@ impl<'c> Parser<'c> {
 
     fn patch_jump(&mut self, offset: usize) -> () {
         // -2 to adjust the bytecode for the jump offset itself
-        let jump = (self.chunk.code.len() - 2) as u16;
+        let jump = self.chunk.code.len() - 1 - offset;
 
-        if jump > u16::max_value() {
-            self.error("Too much code to jump over.");
+        let jump = match u16::try_from(jump) {
+            Ok(jump) => jump,
+            Err(_) => {
+                self.error("Too much code to jump over.");
+                0xfff
+            }
+        };
+
+        match self.chunk.code[offset] {
+            OpCode::OpJumpIfFalse(ref mut o) => *o = jump,
+            OpCode::OpJump(ref mut o) => *o = jump,
+            _ => panic!("instruction at position is not jump"),
         }
-
-        self.chunk.code[offset] = OpCode::OpJumpIfFalse((jump >> 8) & 0xff);
-        self.chunk.code[offset - 1] = OpCode::OpJumpIfFalse(jump & 0xff);
     }
 
     fn emit_constant(&mut self, value: Value) -> () {

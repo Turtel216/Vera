@@ -22,7 +22,6 @@ pub struct VM {
     pub chunk: Chunk,      // Byte code chunk
     pub code: Vec<OpCode>, // VM instructions
     pub stack: Vec<Value>, // VM value stack
-    pub current: usize,    // Index of current instruction
     pub globals: HashMap<String, Value>,
     pub ip: usize,
 }
@@ -42,7 +41,7 @@ impl VM {
         // Loop over all instruction inside the byte code chunk
         // and execute them
         loop {
-            match self.code[self.current] {
+            match self.code[self.ip] {
                 OpCode::OpReturn => {
                     return InterpretResult::InterpretOk;
                 }
@@ -408,7 +407,7 @@ impl VM {
                 }
             }
             // Continue to next instruction
-            self.current += 1;
+            self.ip += 1;
         }
     }
     // Interpret a chunk of bytecode
@@ -432,7 +431,6 @@ impl VM {
         // Init vm
         self.chunk = chunk;
         self.code = self.chunk.code.clone();
-        self.current = 0;
 
         // Run instructions
         let result = self.run();
