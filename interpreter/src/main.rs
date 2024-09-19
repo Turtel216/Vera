@@ -11,9 +11,8 @@ mod vm;
 
 use std::collections::HashMap;
 use std::env;
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::BufReader;
+use std::fs;
+use std::process;
 
 use chunk::Chunk;
 use vm::VM;
@@ -25,10 +24,7 @@ fn main() {
     if args.len() == 1 {
         repl();
     } else if args.len() == 2 {
-        match run_file(&args[1]) {
-            Ok(()) => (),
-            Err(e) => println!("Error: {e:?}"),
-        }
+        run_file(&args[1]);
     } else {
         println!("Usage: pf [path]");
     }
@@ -69,12 +65,15 @@ fn repl() -> () {
 }
 
 // File interpreter
-fn run_file(_path: &String) -> std::io::Result<()> {
+fn run_file(path: &String) {
     // Read from file
-    let file = File::open(_path)?;
-    let mut buf_reader = BufReader::new(file);
-    let mut contents = String::new();
-    buf_reader.read_to_string(&mut contents)?;
+    let code = match fs::read_to_string(path) {
+        Ok(content) => content,
+        Err(error) => {
+            eprint!("Unable to read file {}: {}", path, error);
+            process::exit(74);
+        }
+    };
 
     // Initialize vm
     let mut vm = VM {
@@ -86,12 +85,5 @@ fn run_file(_path: &String) -> std::io::Result<()> {
         globals: HashMap::new(),
     };
 
-    // Interpret each line
-    let lines = contents.lines();
-    for line in lines {
-        vm.interpret(&line.to_string());
-    }
-
-    vm.free_vm();
-    Ok(())
+    let error = vm.interpret(&code); //TODO
 }

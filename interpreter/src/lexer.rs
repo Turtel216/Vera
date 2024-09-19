@@ -92,6 +92,10 @@ impl fmt::Display for TokenType {
             TokenType::TokenGreaterEqual => write!(f, "Token GreaterEqual"),
             TokenType::TokenLess => write!(f, "Token Less"),
             TokenType::TokenLessEqual => write!(f, "Token LessEqual"),
+            TokenType::TokenWhile => write!(f, "Token While"),
+            TokenType::TokenAnd => write!(f, "Token And"),
+            TokenType::TokenPrint => write!(f, "Token Print"),
+            TokenType::TokenIf => write!(f, "Token If"),
             _ => todo!(),
         }
     }
@@ -455,6 +459,7 @@ impl<'s> Scanner<'s> {
         let char = self.peek();
         self.current += 1;
         self.col += 1;
+
         char
     }
 }

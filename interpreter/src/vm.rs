@@ -31,10 +31,6 @@ use crate::lexer::Scanner;
 use crate::value::Value;
 
 impl VM {
-    // Close vm
-    // TODO
-    pub fn free_vm(&mut self) -> () {}
-
     /// Executes bytecode instructions stored in the `chunk`.
     ///
     /// The function loops over each instruction, processes it,

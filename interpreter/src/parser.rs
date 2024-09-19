@@ -640,7 +640,7 @@ impl<'c> Parser<'c> {
             TokenType::TokenGreaterEqual => self.emit_bytes(OpCode::OpLess, OpCode::OpNot),
             TokenType::TokenLess => self.emit_byte(OpCode::OpLess),
             TokenType::TokenLessEqual => self.emit_bytes(OpCode::OpGreater, OpCode::OpNot),
-            _ => return,
+            _ => panic!("Invalid binary operator!"),
         }
     }
 
