@@ -111,7 +111,7 @@ pub struct Token {
 impl Token {
     // Create a new Token
     pub fn new(_type: TokenType, scanner: &Scanner) -> Token {
-        let lexeme = &scanner.source[scanner.start..scanner.current];
+        let lexeme = &scanner.source[scanner.start..scanner.current - 1];
 
         Token {
             _type,
@@ -468,6 +468,7 @@ mod tests {
     use crate::lexer;
     use crate::lexer::TokenType;
 
+    //TODO Fix test
     #[test]
     fn test_lexer() {
         // Initialise lexer
@@ -530,7 +531,13 @@ mod tests {
 
             // Assure that the token generated
             // by the lexer is equal to the expected token
-            assert_eq!(token._type, *etoken);
+            //assert_eq!(token._type, *etoken);
+            if token._type != *etoken {
+                panic!(
+                    "Token: {} is not equal to expected token: {}",
+                    token._type, etoken
+                );
+            }
         }
     }
 }
