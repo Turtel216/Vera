@@ -274,7 +274,12 @@ impl<'c> Parser<'c> {
             None,
             Precedence::PrecNone,
         );
-        rule(TokenType::TokenAnd, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenAnd,
+            None,
+            Some(Parser::and_),
+            Precedence::PrecAnd,
+        );
         rule(TokenType::TokenClass, None, None, Precedence::PrecNone);
         rule(TokenType::TokenElse, None, None, Precedence::PrecNone);
         rule(
@@ -288,7 +293,12 @@ impl<'c> Parser<'c> {
         rule(TokenType::TokenFun, None, None, Precedence::PrecNone);
         rule(TokenType::TokenIf, None, None, Precedence::PrecNone);
         rule(TokenType::TokenNil, None, None, Precedence::PrecNone);
-        rule(TokenType::TokenOr, None, None, Precedence::PrecNone);
+        rule(
+            TokenType::TokenOr,
+            None,
+            Some(Parser::or_),
+            Precedence::PrecOr,
+        );
         rule(TokenType::TokenPrint, None, None, Precedence::PrecNone);
         rule(TokenType::TokenReturn, None, None, Precedence::PrecNone);
         rule(TokenType::TokenTrue, None, None, Precedence::PrecNone);
@@ -423,6 +433,15 @@ impl<'c> Parser<'c> {
         }
 
         self.emit_byte(OpCode::OpDefineGlobal(global));
+    }
+
+    fn and_(&mut self, _can_assign: bool) -> () {
+        let end_jump = self.emit_jump(OpCode::OpJumpIfFalse(0xff)) as usize;
+
+        self.emit_byte(OpCode::OpPop);
+        self.parse_precedence(Precedence::PrecAnd);
+
+        self.patch_jump(end_jump);
     }
 
     fn declare_variable(&mut self) -> () {
@@ -687,6 +706,17 @@ impl<'c> Parser<'c> {
         };
 
         self.emit_constant(Value::Number(value));
+    }
+
+    fn or_(&mut self, _can_assign: bool) -> () {
+        let else_jump = self.emit_jump(OpCode::OpJumpIfFalse(0xff)) as usize;
+        let end_jump = self.emit_jump(OpCode::OpJump(0xff)) as usize;
+
+        self.patch_jump(else_jump);
+        self.emit_byte(OpCode::OpPop);
+
+        self.parse_precedence(Precedence::PrecOr);
+        self.patch_jump(end_jump);
     }
 
     fn make_constant(&mut self, value: Value) -> u8 {
