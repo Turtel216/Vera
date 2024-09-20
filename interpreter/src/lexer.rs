@@ -475,7 +475,7 @@ mod tests {
         let mut scanner = lexer::Scanner::new(
             "( ) { } , . - + ; \n
                 / * ^ ! != = == > >= < <= ++ -- pink  name \n
-                time brick outThere anybody goodbye   echoes money shine",
+                time brick outThere anybody goodbye   echoes money shine ",
         );
         // Generate vector of TokenTypes
         let tokens = scanner.scan_tokens();

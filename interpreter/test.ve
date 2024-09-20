@@ -1,6 +1,6 @@
 pink i = 0;
 
-echoes (i > 0) {
+echoes (i < 10) {
   shine i;
   i = i + 1;
 }
