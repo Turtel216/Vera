@@ -499,17 +499,20 @@ impl<'c> Parser<'c> {
         }));
     }
 
-    fn resolve_local(&mut self, compiler: Compiler, name: &Token) -> isize {
+    fn resolve_local(&mut self, compiler: Compiler, name: &Token) -> Option<u8> {
         for (i, local) in compiler.locals.iter().enumerate() {
             if name.source_str == local.name.source_str {
                 if local.depth == -1 {
                     self.error("Can't read local variable in its own initializer.");
                 }
-                return i as isize;
+                return Some(
+                    i.try_into()
+                        .expect("Can'nt convert usize into u8 in resolve local"),
+                );
             }
         }
 
-        return -1;
+        None
     }
 
     fn synchronize(&mut self) -> () {
@@ -665,11 +668,11 @@ impl<'c> Parser<'c> {
 
     fn named_variable(&mut self, name: &Token, can_assign: bool) -> () {
         let (op_get, op_set) = match self.resolve_local(self.current_compiler.clone(), &name) {
-            -1 => {
+            None => {
                 let arg = self.identifier_constant(&name);
                 (OpCode::OpGetGlobal(arg), OpCode::OpSetGlobal(arg))
             }
-            arg => (OpCode::OpGetLocal(arg as u8), OpCode::OpSetLocal(arg as u8)),
+            Some(arg) => (OpCode::OpGetLocal(arg as u8), OpCode::OpSetLocal(arg as u8)),
         };
 
         if self.match_token(TokenType::TokenEqual) && can_assign {

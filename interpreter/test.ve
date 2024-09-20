@@ -1,6 +1,6 @@
-pink i = 0;
+pink i = 1;
 
-echoes (i < 10) {
+outThere (i > 0) {
   shine i;
   i = i + 1;
 }
