@@ -119,9 +119,9 @@ impl<'c> Chunk {
         self.constants.free_value_array();
     }
     // Add a constant value to chunk
-    pub fn add_constant(&mut self, value: Value) -> Result<u8, TryFromIntError> {
+    pub fn add_constant(&mut self, value: Value) -> usize {
         self.constants.write_value_array(value);
-        let result = self.constants.array.len().try_into();
+        let result = self.constants.array.len() - 1;
         result
     }
 

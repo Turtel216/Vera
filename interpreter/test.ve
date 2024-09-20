@@ -1,8 +1,8 @@
-pink i = 1;
+pink i = 0;
 
-outThere (i > 0) {
+echoes (i < 10) {
   shine i;
   i = i + 1;
 }
 
-shine "Finish";
+shine i;

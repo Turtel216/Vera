@@ -470,12 +470,12 @@ impl<'c> Parser<'c> {
         let name = self.tokens[self.current - 1].clone();
 
         // Check for duplicate names in scope and variable shadowing
-        for local in self.current_compiler.locals.iter_mut() {
+        for local in self.current_compiler.locals.iter_mut().rev() {
             if local.depth != -1 && local.depth < self.current_compiler.scope_depth {
                 break;
             }
 
-            if name.source_str == local.name.source_str {
+            if name.lexeme == local.name.lexeme {
                 self.error("Already a variable with this name in this scope.");
                 return; //TODO might cause bug
             }
@@ -495,13 +495,13 @@ impl<'c> Parser<'c> {
 
     fn identifier_constant(&mut self, name: &Token) -> u8 {
         return self.make_constant(Value::Object(ObjString {
-            chars: name.source_str.clone(),
+            chars: name.lexeme.clone(),
         }));
     }
 
     fn resolve_local(&mut self, compiler: Compiler, name: &Token) -> Option<u8> {
-        for (i, local) in compiler.locals.iter().enumerate() {
-            if name.source_str == local.name.source_str {
+        for (i, local) in compiler.locals.iter().enumerate().rev() {
+            if name.lexeme == local.name.lexeme {
                 if local.depth == -1 {
                     self.error("Can't read local variable in its own initializer.");
                 }
@@ -552,7 +552,7 @@ impl<'c> Parser<'c> {
             return;
         }
 
-        self.error_at_current(&self.tokens[self.current].source_str);
+        self.error_at_current(&self.tokens[self.current].lexeme);
     }
 
     fn match_token(&mut self, _type: TokenType) -> bool {
@@ -585,14 +585,11 @@ impl<'c> Parser<'c> {
 
     fn end_scope(&mut self) -> () {
         self.current_compiler.scope_depth -= 1;
-
-        // Free up locals
-        while self.current_compiler.locals.len() > 0
-            && self.current_compiler.locals.last().unwrap().depth
-                > self.current_compiler.scope_depth
-        {
-            self.emit_byte(OpCode::OpPop);
-            self.current_compiler.locals.pop();
+        for i in (0..self.current_compiler.locals.len()).rev() {
+            if self.current_compiler.locals[i].depth > self.current_compiler.scope_depth {
+                self.emit_byte(OpCode::OpPop);
+                self.current_compiler.locals.pop();
+            }
         }
     }
 
@@ -658,7 +655,7 @@ impl<'c> Parser<'c> {
 
     fn parse_string(&mut self, _can_assign: bool) -> () {
         self.emit_constant(Value::Object(ObjString {
-            chars: self.tokens[self.current - 1].source_str.clone(),
+            chars: self.tokens[self.current - 1].lexeme.clone(),
         }));
     }
 
@@ -721,7 +718,7 @@ impl<'c> Parser<'c> {
     }
 
     fn parse_number(&mut self, _can_assign: bool) -> () {
-        let value = match self.tokens[self.current - 1].source_str.parse() {
+        let value = match self.tokens[self.current - 1].lexeme.parse() {
             Ok(v) => v,
             Err(_) => 0.0, //TODO proper error handling
         };
@@ -741,15 +738,14 @@ impl<'c> Parser<'c> {
     }
 
     fn make_constant(&mut self, value: Value) -> u8 {
-        let constant = u8::from(match self.chunk.add_constant(value) {
-            Ok(v) => v,
+        let constant = self.chunk.add_constant(value);
+        match u8::try_from(constant) {
+            Ok(index) => index,
             Err(_) => {
-                println!("Too many constants in one chunk.");
-                return 0;
+                self.error("Too many constants in one chunk");
+                0
             }
-        });
-
-        return constant - 1; //TODO
+        }
     }
 
     fn emit_byte(&mut self, byte: OpCode) -> usize {
@@ -834,7 +830,7 @@ impl<'c> Parser<'c> {
         match token._type {
             TokenType::TokenEOF => print!(" at end"),
             TokenType::TokenError => print!(""),
-            _ => print!(" at '{}'", token.source_str),
+            _ => print!(" at '{}'", token.lexeme),
         };
 
         println!(": {}", msg);

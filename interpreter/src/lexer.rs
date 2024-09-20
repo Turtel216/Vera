@@ -103,7 +103,7 @@ impl fmt::Display for TokenType {
 
 pub struct Token {
     pub _type: TokenType,
-    pub source_str: String,
+    pub lexeme: String,
     pub line: usize,
     pub col: usize,
 }
@@ -115,7 +115,16 @@ impl Token {
 
         Token {
             _type,
-            source_str: lexeme.to_string(),
+            lexeme: lexeme.to_string(),
+            line: scanner.line,
+            col: scanner.col - lexeme.len(),
+        }
+    }
+
+    fn new_identifier_token(_type: TokenType, lexeme: &str, scanner: &Scanner) -> Token {
+        Token {
+            _type,
+            lexeme: lexeme.to_string(),
             line: scanner.line,
             col: scanner.col - lexeme.len(),
         }
@@ -124,7 +133,7 @@ impl Token {
     pub fn error_token(msg: String, scanner: &Scanner) -> Token {
         Token {
             _type: TokenType::TokenError,
-            source_str: msg,
+            lexeme: msg,
             line: scanner.line,
             col: scanner.col,
         }
@@ -135,7 +144,7 @@ impl Clone for Token {
     fn clone(&self) -> Self {
         Token {
             _type: self._type,
-            source_str: self.source_str.clone(),
+            lexeme: self.lexeme.clone(),
             line: self.line,
             col: self.col,
         }
@@ -176,7 +185,7 @@ impl<'s> Scanner<'s> {
         // Append the 'End Of Line' Token
         self.tokens.push(Token {
             _type: TokenType::TokenEOF,
-            source_str: "EOF".to_string(),
+            lexeme: "EOF".to_string(),
             line: self.line,
             col: self.col,
         });
@@ -308,8 +317,11 @@ impl<'s> Scanner<'s> {
 
         // Check if the token is an identifier
         // or a keyword and add it to the vector
-        self.tokens
-            .push(Token::new(self.match_keyword(value), self));
+        self.tokens.push(Token::new_identifier_token(
+            self.match_keyword(value),
+            value,
+            self,
+        ));
     }
 
     // Check if identifier is a keyword, return its type. If its not a keyword return identifier

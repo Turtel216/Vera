@@ -363,13 +363,13 @@ impl VM {
                 }
                 OpCode::OpSetGlobal(i) => {
                     let global_name = self.chunk.read_string(i);
-                    match self.globals.get(&global_name) {
-                        Some(value) => self.push(value.clone()),
-                        None => {
-                            let msg = format!("Undefined variable '{}'.", global_name);
-                            self.runtime_error(&msg);
-                            return InterpretResult::InterpretRuneTimeError;
-                        }
+                    let value = self.peek(0);
+                    //TODO remove global_name.clone
+                    if self.globals.insert(global_name.clone(), value).is_none() {
+                        self.globals.remove(&global_name);
+                        let msg = format!("Undefined variable '{}'.", global_name);
+                        self.runtime_error(&msg);
+                        return InterpretResult::InterpretRuneTimeError;
                     }
                 }
                 OpCode::OpGetLocal(i) => {
@@ -384,15 +384,8 @@ impl VM {
                     }
                 }
                 OpCode::OpSetLocal(i) => {
-                    let local_name = self.chunk.read_string(i);
-                    match self.globals.get(&local_name) {
-                        Some(value) => self.push(value.clone()),
-                        None => {
-                            let msg = format!("Undefined variable '{}'.", local_name);
-                            self.runtime_error(&msg);
-                            return InterpretResult::InterpretRuneTimeError;
-                        }
-                    }
+                    let value = self.peek(0);
+                    self.stack[i as usize] = value;
                 }
                 OpCode::OpJumpIfFalse(offset) => {
                     if self.peek(0).is_falsey() {
