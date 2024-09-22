@@ -2,13 +2,6 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-mod chunk;
-mod lexer;
-mod object;
-mod parser;
-mod value;
-mod vm;
-
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -16,8 +9,8 @@ use std::io;
 use std::io::prelude::*;
 use std::process;
 
-use chunk::Chunk;
-use vm::VM;
+use pf::chunk::Chunk;
+use pf::vm::VM;
 
 fn main() {
     env::set_var("RUST_BACKTRACE", "1");
