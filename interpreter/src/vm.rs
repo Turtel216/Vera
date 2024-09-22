@@ -285,7 +285,7 @@ impl VM {
                             return InterpretResult::InterpretRuneTimeError;
                         }
                     };
-                    let result = value_a > value_b;
+                    let result = value_a < value_b;
                     self.push(Value::Bool(result));
                 }
                 OpCode::OpLess => {
@@ -308,7 +308,7 @@ impl VM {
                             return InterpretResult::InterpretRuneTimeError;
                         }
                     };
-                    let result = value_a < value_b;
+                    let result = value_a > value_b;
                     self.push(Value::Bool(result));
                 }
                 OpCode::OpPrint => Value::print_value(self.pop()),

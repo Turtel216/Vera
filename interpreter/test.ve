@@ -1,9 +1,8 @@
 pink i = 0;
 
-outThere (i == 10) {
-  shine "Error!";
-} anybody {
-  i = i + 1; //TODO setGlobal doesn't work
+echoes (i < 10) {
+  shine i;
+  i = i + 1;
 }
 
-shine i;
+shine "Finish";
