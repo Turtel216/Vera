@@ -22,8 +22,6 @@ pub enum OpCode {
     OpMultiply,
     OpDivide,
     OpPow,
-    OpIncrement,
-    OpDecrement,
     OpLeftShift,
     OpRightShift,
     OpNot,
@@ -50,8 +48,6 @@ impl fmt::Display for OpCode {
             OpCode::OpDivide => write!(f, "OpDivide"),
             OpCode::OpNegate => write!(f, "OpNegate"),
             OpCode::OpPow => write!(f, "OpPow"),
-            OpCode::OpIncrement => write!(f, "OpIncrement"),
-            OpCode::OpDecrement => write!(f, "OpDecrement"),
             OpCode::OpRightShift => write!(f, "OpRightShift"),
             OpCode::OpLeftShift => write!(f, "OpLeftShift"),
             OpCode::OpTrue => write!(f, "OpTrue"),
@@ -75,7 +71,6 @@ impl fmt::Display for OpCode {
     }
 }
 
-use std::num::TryFromIntError;
 use std::usize;
 
 use crate::value::Value;

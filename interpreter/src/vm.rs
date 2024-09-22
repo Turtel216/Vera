@@ -67,38 +67,6 @@ impl VM {
                     value = -value;
                     self.push(Value::Number(value));
                 }
-                OpCode::OpDecrement => {
-                    // Get first value from stack
-                    // Check if its a number
-                    // decrement it by 1
-                    // Push it back onto the stack
-                    let mut value = match self.pop() {
-                        Value::Number(v) => v,
-                        _ => {
-                            self.runtime_error("Operand must be a number.");
-                            return InterpretResult::InterpretRuneTimeError;
-                        }
-                    };
-
-                    value = value - 1.0;
-                    self.push(Value::Number(value));
-                }
-                OpCode::OpIncrement => {
-                    // Get first value from stack
-                    // Check if its a number
-                    // increment it by 1
-                    // Push it back onto the stack
-                    let mut value = match self.pop() {
-                        Value::Number(v) => v,
-                        _ => {
-                            self.runtime_error("Operand must be a number.");
-                            return InterpretResult::InterpretRuneTimeError;
-                        }
-                    };
-
-                    value = value + 1.0;
-                    self.push(Value::Number(value));
-                }
                 OpCode::OpAdd => {
                     // Get first two values
                     let (b, a) = (self.pop(), self.pop());
@@ -389,7 +357,7 @@ impl VM {
                 }
                 OpCode::OpJumpIfFalse(offset) => {
                     if self.peek(0).is_falsey() {
-                        self.ip += offset as usize; //TODO
+                        self.ip += offset as usize;
                     }
                 }
                 OpCode::OpJump(offset) => {

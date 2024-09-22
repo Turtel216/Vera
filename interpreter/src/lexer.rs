@@ -96,6 +96,7 @@ impl fmt::Display for TokenType {
             TokenType::TokenAnd => write!(f, "Token And"),
             TokenType::TokenPrint => write!(f, "Token Print"),
             TokenType::TokenIf => write!(f, "Token If"),
+            TokenType::TokenElse => write!(f, "Token Else"),
             _ => todo!(),
         }
     }
@@ -111,7 +112,7 @@ pub struct Token {
 impl Token {
     // Create a new Token
     pub fn new(_type: TokenType, scanner: &Scanner) -> Token {
-        let lexeme = &scanner.source[scanner.start..scanner.current - 1];
+        let lexeme = &scanner.source[scanner.start..scanner.current];
 
         Token {
             _type,

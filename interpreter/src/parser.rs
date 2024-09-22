@@ -379,7 +379,6 @@ impl<'c> Parser<'c> {
         let else_jump = self.emit_byte(OpCode::OpJump(0xffff));
 
         self.patch_jump(then_jump);
-
         self.emit_byte(OpCode::OpPop);
 
         if self.match_token(TokenType::TokenElse) {
@@ -779,7 +778,6 @@ impl<'c> Parser<'c> {
     }
 
     fn patch_jump(&mut self, offset: usize) -> () {
-        // -2 to adjust the bytecode for the jump offset itself
         let jump = self.chunk.code.len() - 1 - offset;
 
         let jump = match u16::try_from(jump) {
