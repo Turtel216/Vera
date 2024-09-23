@@ -130,6 +130,7 @@ impl Token {
             col: scanner.col - lexeme.len(),
         }
     }
+
     // Create an error Token, This type of Token has a msg as its source_str
     pub fn error_token(msg: String, scanner: &Scanner) -> Token {
         Token {
@@ -387,7 +388,9 @@ impl<'s> Scanner<'s> {
         }
 
         self.advance();
-        let token = Token::new(TokenType::TokenString, self);
+
+        let lexeme = &self.source[self.start..self.current - 1];
+        let token = Token::new_identifier_token(TokenType::TokenString, lexeme, self);
         return token;
     }
 
