@@ -352,6 +352,8 @@ impl<'c> Parser<'c> {
             self.begin_scope();
             self.block();
             self.end_scope();
+        } else if self.match_token(TokenType::TokenFor) {
+            self.for_statement();
         } else if self.match_token(TokenType::TokenIf) {
             self.if_statement();
         } else if self.match_token(TokenType::TokenWhile) {
@@ -367,8 +369,58 @@ impl<'c> Parser<'c> {
         self.emit_byte(OpCode::OpPop);
     }
 
+    fn for_statement(&mut self) -> () {
+        self.begin_scope();
+        self.consume(TokenType::TokenLeftParen, "Expect '(' after 'time'.");
+
+        // Initializer
+        if self.match_token(TokenType::TokenSemicolon) {
+            // no initializer
+        } else if self.match_token(TokenType::TokenVar) {
+            self.var_declaration();
+        } else {
+            self.expression_statement();
+        }
+        let mut loop_start = self.start_loop();
+
+        // Condition
+        let mut exit_jump = Option::None;
+        if !self.match_token(TokenType::TokenSemicolon) {
+            self.expression();
+            self.consume(
+                TokenType::TokenSemicolon,
+                "Expect ';' after loop condition.",
+            );
+
+            let jump = self.emit_byte(OpCode::OpJumpIfFalse(0xffff));
+            exit_jump = Option::from(jump);
+            self.emit_byte(OpCode::OpPop);
+        }
+
+        // Increment
+        if !self.match_token(TokenType::TokenLeftParen) {
+            let body_jump = self.emit_byte(OpCode::OpJump(0xffff));
+            let increment_start = self.start_loop();
+
+            self.expression();
+            self.emit_byte(OpCode::OpPop);
+            self.consume(TokenType::TokenRightParen, "Expect ')' after for clauses.");
+            self.emit_loop(loop_start);
+            loop_start = increment_start;
+            self.patch_jump(body_jump);
+        }
+        self.statement();
+        self.emit_loop(loop_start);
+
+        if let Option::Some(exit_jump) = exit_jump {
+            self.patch_jump(exit_jump);
+            self.emit_byte(OpCode::OpPop);
+        }
+        self.end_scope();
+    }
+
     fn if_statement(&mut self) -> () {
-        self.consume(TokenType::TokenLeftParen, "Expected '(' after 'if..TODO'.");
+        self.consume(TokenType::TokenLeftParen, "Expected '(' after 'outThere'.");
         self.expression();
         self.consume(TokenType::TokenRightParen, "Expected ')' after condition.");
 
@@ -395,9 +447,9 @@ impl<'c> Parser<'c> {
     }
 
     fn while_statement(&mut self) -> () {
-        let loop_start = self.chunk.code.len();
+        let loop_start = self.start_loop();
 
-        self.consume(TokenType::TokenLeftParen, "Expected '(' after 'TODO'.");
+        self.consume(TokenType::TokenLeftParen, "Expected '(' after 'echoes'.");
         self.expression();
         self.consume(TokenType::TokenRightParen, "Expected ')' after condition.");
 
@@ -802,6 +854,10 @@ impl<'c> Parser<'c> {
 
     fn emit_return(&mut self) -> () {
         self.emit_byte(OpCode::OpReturn);
+    }
+
+    fn start_loop(&self) -> usize {
+        self.chunk.code.len()
     }
 
     /// Reports an error at the current token, printing a message and entering panic mode.

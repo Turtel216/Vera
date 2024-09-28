@@ -1,9 +1,7 @@
-pink i = 0;
-pink z = "Finish!";
+pink finish = "Finish!";
 
-echoes (i < 10) {
-  shine i;
-  i = i + 1;
+time(pink i = 0; i < 10; i = i + 1) {
+	shine i;
 }
 
-shine z;
+shine finish;
